@@ -1,5 +1,5 @@
 # Words
-A game I made so I could play the word-building games my grandma loves while protecting my privacy (Words With Friends is an embarassingly bloated app, and I don't have a smartphone anyway)
+A game I made so I could play the word-building games my grandma loves while protecting my privacy (apps like Words With Friends are embarassingly bloated app, and I don't have a smartphone anyway)
 
 <img width="700" alt="Screenshot 2023-08-08 at 08 26 42" src="https://github.com/benn-mctosh/words/assets/107890667/196e686a-c54e-4276-936f-adfc3a7f43e3">
 
