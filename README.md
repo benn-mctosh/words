@@ -6,7 +6,7 @@ A game I made so I could play the word-building games my grandma loves while pro
 ## What is this? 
 A privacy-preserving crossword game. **This game protects your data through the simple expedient of not collecting any data.**
 
-Everything is performed client-side. Think about it as a game in the tradition of chess-by-correspondence: you make a move, then send the game state to your opponent, who makes their move... Even dictionary lookups are performed client-side (This makes for a larger-than-ideal web page, since you're downloading the entire dictionary. Maybe there's some sort of client-side caching that can address this, but that's not part of the minimum viable product. You could also just download `loadDictionary.js` for yourself and run the game offline if you want.)
+Everything is performed client-side. Think about it as a game in the tradition of chess-by-correspondence: you make a move, then send the game state to your opponent, who makes their move... Even dictionary lookups are performed client-side (This makes for a larger-than-ideal web page, since you're downloading the entire dictionary. Maybe there's some sort of client-side caching that can address this, but that's not part of the minimum viable product. You could also just download `loadDict.js` for yourself and run the game offline if you want.)
 
 The stable version of this game lives on my website, at [`https://bennettmcintosh.com/words`](https://bennettmcintosh.com/words).
 
