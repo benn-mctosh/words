@@ -4,14 +4,14 @@ A game I made so I could play the word-building games my grandma loves while pro
 <img width="700" alt="Screenshot 2023-08-08 at 08 26 42" src="https://github.com/benn-mctosh/words/assets/107890667/196e686a-c54e-4276-936f-adfc3a7f43e3">
 
 ## What is this? 
-A privacy-preserving crossword game. Think about it as a game in the tradition of chess-by-correspondence: you make a move, then send the game state to your opponent, who makes their move... 
+A privacy-preserving crossword game. **This game protects your data through the simple expedient of not collecting any data.**
+
+Think about it as a game in the tradition of chess-by-correspondence: you make a move, then send the game state to your opponent, who makes their move... Even dictionary lookups are performed client-side (This makes for a larger-than-ideal web page, since you're downloading the entire dictionary. Maybe there's some sort of client-side caching that can address this, but that's not part of the minimum viable product.)
 
 The stable version of this game lives on my website, at [`https://bennettmcintosh.com/words`](https://bennettmcintosh.com/words)
 
-This protects your data through the simple expedient of not collecting any data. Even dictionary lookups are performed client-side (which makes for a larger-than-ideal web page, since you're downloading the entire dictionary. Maybe there's some sort of client-side caching that can address this, but that's not part of the minimum viable product.)
-
 ## Starting a new game
-Navigating to the landing page (in this case, [`https://bennettmcintosh.com/words`](https://bennettmcintosh.com/words)) produces an empty game board and automatically draws seven tiles for you. Build words by clicking on a tile to select it, then click on the board to place it where you click, or on the rack to remove it from the board. If you have made a legal move, the `Play` button will turn green and display the number of points this play would earn you. 
+Navigating to the landing page (in this case, [`https://bennettmcintosh.com/words`](https://bennettmcintosh.com/words), with no URL parameters) produces an empty game board and automatically draws seven tiles for you. Build words by clicking on a tile to select it, then click on the board to place it where you click, or on the rack to remove it from the board. If you have made a legal move, the `Play` button will turn green and display the number of points this play would earn you. 
 
 ## Enlisting/informing an opponent
 
