@@ -6,9 +6,11 @@ A game I made so I could play the word-building games my grandma loves while pro
 ## What is this? 
 A privacy-preserving crossword game. **This game protects your data through the simple expedient of not collecting any data.**
 
-Think about it as a game in the tradition of chess-by-correspondence: you make a move, then send the game state to your opponent, who makes their move... Even dictionary lookups are performed client-side (This makes for a larger-than-ideal web page, since you're downloading the entire dictionary. Maybe there's some sort of client-side caching that can address this, but that's not part of the minimum viable product.)
+Everything is performed client-side. Think about it as a game in the tradition of chess-by-correspondence: you make a move, then send the game state to your opponent, who makes their move... Even dictionary lookups are performed client-side (This makes for a larger-than-ideal web page, since you're downloading the entire dictionary. Maybe there's some sort of client-side caching that can address this, but that's not part of the minimum viable product. You could also just download `loadDictionary.js` for yourself and run the game offline if you want.)
 
-The stable version of this game lives on my website, at [`https://bennettmcintosh.com/words`](https://bennettmcintosh.com/words)
+The stable version of this game lives on my website, at [`https://bennettmcintosh.com/words`](https://bennettmcintosh.com/words).
+
+I can’t provide any privacy guarantees, though, becuase my website is hosted by GitHub, and I haven’t bothered to figure out what sort of analytics they collect. So if it’s really important to you that MSFT not have your Scrabble moves (to train ScrabbleGPT? That train has probably left the station) I suggest, even encourage you, to download the javascript source yourself. 
 
 ## Starting a new game
 Navigating to the landing page (in this case, [`https://bennettmcintosh.com/words`](https://bennettmcintosh.com/words), with no URL parameters) produces an empty game board and automatically draws seven tiles for you. Build words by clicking on a tile to select it, then click on the board to place it where you click, or on the rack to remove it from the board. If you have made a legal move, the `Play` button will turn green and display the number of points this play would earn you. 
