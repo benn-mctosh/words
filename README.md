@@ -15,9 +15,11 @@ I can’t provide any privacy guarantees, though, becuase my website is hosted b
 ## Starting a new game
 Navigating to the landing page (in this case, [`https://bennettmcintosh.com/words`](https://bennettmcintosh.com/words), with no URL parameters) produces an empty game board and automatically draws seven tiles for you. Build words by clicking on a tile to select it, then click on the board to place it where you click, or on the rack to remove it from the board. If you have made a legal move, the `Play` button will turn green and display the number of points this play would earn you. 
 
+If you're not sure why a move isn’t valid, clicking on the `Play` button while it’s gray will produce a message explaining why.
+
 ## Enlisting/informing an opponent
 
-Once you click the `Play` button, the game autogenerates:
+Once you click the `Play` button, the game automatically generates:
 * A URL that includes the `seed` parameter, which your opponent can visit to view/play the game from their perspective
 * The text of an email or message you can send to your opponent with that URL (so that you can use communications protocol of your choice)
 * A `mailto` link (with blank recipient field) that you can click to generate such an email. Simply input your opponent’s email address.
