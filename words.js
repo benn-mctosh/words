@@ -12,39 +12,32 @@
   const p2name = params.get('p2')
   // when encrypted, 'PLAYER_' should read 'jvobAY'
   const board = document.querySelector(".gameBoard");
-  // const overlay = document.querySelector(".gameTiles")
   
   /**********************
   
   COLORS & STYLES & GEOMETRY
   
   **********************/  
-  /* const offsetTop = 50;
-  const offsetLeft = 50;
-  board.style.position = "absolute";
-  board.style.top = "50px";
-  board.style.left = "50px"; */
+
   const width = (board.width);
   const height = (board.height);  
-  const bkgdCol = "rgb(255, 255, 255)";
-  const transparent = "rgba(1, 1, 1, 1)";
-  const tileCol = "rgb(255, 235, 200)";
-  const newTileCol = "rgb(240, 200, 80)";
-  const selectedTileCol = "rgb(150, 125, 25)";
+  const sqLen = 15;
+  const white = "rgb(255, 255, 255)";
+  const cream = "rgb(255, 235, 200)";
+  const gold = "rgb(240, 200, 80)";
+  const brown = "rgb(150, 125, 25)";
   const dlCol = "rgb(100, 0, 150)";
   const tlCol = "rgb(150, 0, 100)";
   const dwCol = "rgb(25, 25, 170)";
   const twCol = "rgb(25, 100, 100)";
-  const blankCol = "rgb(150, 0, 0)";
-  const bonusCol = "rgb(255, 255, 255)";
-  const charCol = "rgb(0, 0, 0)";
-  const lineCol = "rgb(204, 204, 170)";
-  const rackCol = "rgb(200, 150, 50)"
-  const tileWidth = 40;
-  const tileHeight = 40;
-  const tileFont = "38px courier";
-  const valueFont = "18px arial";
-  const bonusFont = "20px arial";
+  const red = "rgb(150, 0, 0)";
+  const black = "rgb(0, 0, 0)";
+  const shadow = "rgb(204, 204, 170)";
+  const tWid = width / sqLen;
+  const tHite = height / sqLen;
+  const tFont = "38px courier";
+  const vFont = "18px arial";
+  const bFont = "20px arial";
   const cXpad = 5;
   const cYpad = 30;
   const vX1pad = 27;
@@ -52,11 +45,20 @@
   const vYpad = 15;
   const bXpad = 5;
   const bYpad = 28;
-  const boardTop = 0;
-  const boardLeft = 0;
+  const keyWidth = 35; 
+  const keyHeight = 35;
+  const keyFont = "28px courier";
+  const kXpad = 5;
+  const kYpad = 24;
+  const keyList = "abcdefghijklmnopqrstuvwxyz_".split("")  
   
+  // for compressing/encrypting tiles
+  const codestring = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM-_1234567890".split('');
+  
+  // for tracking tile selection
   var currTileIndex = -1;
   var currCellIndex = -1;
+  var firstMove = false;
   
   /**********************
   
@@ -75,6 +77,80 @@
     return [arr, drawn];
   }
   
+  function encrypt(list) {
+    let index = 0;
+    for (let i = 0; i < list.length; i++ ) {
+      index += (32 ** i) * (list[i].charCodeAt(0) - 64)
+    }
+    let encryption = []
+    
+    while (index > 0) {
+      let r = index % 64;
+      index = (index - r) / 64;
+      encryption.push(codestring[r])
+    }
+    // padding to constant length (6)
+    return encryption.join("").concat("q".repeat(6 - encryption.length));
+  }
+  
+  function decrypt(string) {
+    let index = 0;
+    for (let i = 0; i < string.length; i++) {
+      index += codestring.indexOf(string[i]) * 64 ** i
+    }
+    let decryption = []
+    while (index > 0) {
+      let r = index % 32;
+      index = (index - r) / 32;
+      decryption.push(String.fromCharCode(r + 64))
+    }
+    return decryption;
+    
+  }
+  
+  function encodeTiles(t) {  
+    let c = 0
+    tlen = t.length
+    let bc = []
+    while (c < tlen) {
+      let w = []
+      while (c < tlen && t[c] != "-") {
+        w.push(t[c]);
+        c++;
+      }
+      if (w.length > 0) {bc.push(w.join(""));}
+      let blanks = 0;
+      while (c < tlen && t[c] == "-") {
+        blanks++;
+        c++;
+      }
+      if (blanks > 0) {
+        bc.push(blanks);
+      }
+    }
+    return bc.join("")
+  }
+  
+  function decodeTiles(code) {
+    let i = 0;
+    let lcode = code.length;
+    let t = [];
+    while (i < lcode) {
+      while (isNaN(code[i]) && i < lcode) {
+        t.push(code[i]);
+        i ++;
+      }
+      let n = 0
+      while (!isNaN(code[i]) && i < lcode) {
+        n = n * 10 + parseInt(code[i]);
+        i ++;
+      }
+      t.push(..."-".repeat(n).split("")) // lmao sorry
+    }
+    
+    return t;
+  }
+  
   // bonus uses W, w, L, l, & . for triple/double word, 3/2 letter, & standard
   function decryptBonus(c) {
       if (c == ".") {return ".";}
@@ -90,366 +166,6 @@
       x: evt.clientX - rect.left,
       y: evt.clientY - rect.top
     };
-  }
-  
-  function compare( tileA, tileB ) {
-      if ( tileA.i < tileB.i ){
-        return -1;
-      }
-      if ( tileA.i > tileB.i ){
-        return 1;
-      }
-      return 0;
-  }
-  
-  /**********************
-  
-  BOARD SET UP AND TILE VALUES
-  
-  **********************/  
-  // initialize bonuses; triple/double [L/l]etters or [W/w]ords
-  const bonuses = ['W','.','.','l','.','.','.','W','.','.','.','l','.','.','W',
-                   '.','.','w','.','.','.','l','.','l','.','.','.','w','.','.',
-                   '.','w','.','.','.','L','.','.','.','L','.','.','.','w','.',
-                   'l','.','.','.','w','.','.','l','.','.','w','.','.','.','l',
-                   '.','.','.','w','.','.','.','.','.','.','.','w','.','.','.',
-                   '.','.','L','.','.','.','l','.','L','.','.','.','L','.','.',
-                   '.','l','.','.','.','L','.','.','.','l','.','.','.','l','.',
-                   'W','.','.','l','.','.','.','w','.','.','.','l','.','.','W',
-                   '.','l','.','.','.','l','.','.','.','L','.','.','.','l','.',
-                   '.','.','L','.','.','.','L','.','l','.','.','.','L','.','.',
-                   '.','.','.','w','.','.','.','.','.','.','.','w','.','.','.',
-                   'l','.','.','.','w','.','.','l','.','.','w','.','.','.','l',
-                   '.','w','.','.','.','L','.','.','.','L','.','.','.','w','.',
-                   '.','.','w','.','.','.','l','.','l','.','.','.','w','.','.',
-                   'W','.','.','l','.','.','.','W','.','.','.','l','.','.','W']    
-
-  // get the point value of any given letter
-  function getValue(letter) {
-    if ("AEIOUNSTR".includes(letter)) {return 1;}
-    if ("LDM".includes(letter)) {return 2;}
-    if ("GBCPH".includes(letter)) {return 3;}
-    if ("FWY".includes(letter)) {return 5;}
-    if ("VK".includes(letter)) {return 6;}
-    if ("JX".includes(letter)) {return 8;}
-    if ("Z".includes(letter)) {return 9;}
-    if ("Q".includes(letter)) {return 10;}
-    // lowercase letters AND "_" represent blanks
-    return 0;
-  }
-  
-  // for adding making & drawing the board itself
-  function addCell(ctx, bonus, cell) {
-    let y = (Math.floor(cell / 15)) * tileHeight + boardTop;
-    let x = (cell % 15) * tileWidth + boardLeft;
-    
-    if (bonus == " 3L") {
-      ctx.fillStyle = tlCol;
-      ctx.font = bonusFont;
-    }
-    if (bonus == " 2L") {
-      ctx.fillStyle = dlCol;
-      ctx.font = bonusFont;
-    }
-    if (bonus == "3W") {
-      ctx.fillStyle = twCol;
-      ctx.font = bonusFont;
-    }
-    if (bonus == "2W") {
-      ctx.fillStyle = dwCol;
-      ctx.font = bonusFont;
-    }
-    if (bonus == ".") {
-      ctx.fillStyle = bkgdCol;
-      ctx.font = "0px arial";
-    }
-    if (cell == 112) { 
-      bonus = "🌻";
-      ctx.font = "30px arial"
-    }
-    ctx.fillRect(x, y, tileWidth, tileHeight);
-    ctx.fillStyle = bonusCol;
-    ctx.fillText(bonus, x + bXpad, y + bYpad);
-    
-    ctx.strokeStyle = lineCol;
-    ctx.strokeRect(x, y, tileWidth, tileHeight);
-    return 0;
-  }
-   
-  // for adding pre-existing tiles to the board
-  function setTile(ctx, letter, cell, value) {
-     let y = (Math.floor(cell / 15)) * tileHeight + boardTop;
-     let x = (cell % 15) * tileWidth + boardLeft;
-     ctx.fillStyle = tileCol;
-     ctx.fillRect(x, y, tileWidth, tileHeight);
-     ctx.strokeStyle = lineCol;
-     ctx.strokeRect(x, y, tileWidth, tileHeight);
-     if (letter == letter.toLowerCase()) {
-       ctx.fillStyle = blankCol;
-       ctx.font = tileFont;
-     }
-     else {
-       ctx.fillStyle = charCol;
-       ctx.font = tileFont;
-     }
-     ctx.fillText(letter, x + cXpad, y + cYpad);
-     if (value > 9) {
-       var xp = vX2pad;
-     }
-     else {
-       var xp = vX1pad;
-     }
-     ctx.font = valueFont
-     if (value > 0) {v = value}
-     else {v = '-'}
-     ctx.fillText(v, x + xp, y + vYpad);
-     return 0;
-  }
-
-  /**********************
-  
-  HANDLING THE PLAYER'S TILES
-    
-  **********************/
-  class handTile {
-    constructor(letter, racki) {
-      this.i = racki;
-      this.oldCell = -1;
-      this.border = lineCol;
-      this.width = 40;
-      this.height = 40;
-      this.letter = letter;
-      this.points = getValue(letter); // deprecate?
-      if (letter == letter.toLowerCase()) {
-        this.textColor = blankCol;
-      }
-      else {
-        this.textColor = charCol;
-      }
-      this.isOnBoard = false;
-    }
-    placeTile(ctx, cell) {
-      // // alert("drawing " + this.letter + " at " + cell);
-      // if (cell == this.oldCell && cell > -1) {return 0;}
-      if (cell == -1) {
-        this.x = 42 * this.i + 4;
-        this.y = 5; 
-      }
-      else {
-        this.y = (Math.floor(cell / 15)) * tileHeight + boardTop;
-        this.x = (cell % 15) * tileWidth + boardLeft; 
-      }
-      if (this.isOnBoard && ctx == rackctx) {
-        ctx.fillStyle = rackCol;
-      }
-      else if (this.i == currTileIndex) {
-        ctx.fillStyle = selectedTileCol;
-      }
-      else {
-        ctx.fillStyle = newTileCol;
-      }
-      ctx.fillRect(this.x, this.y, this.width, this.height);
-      ctx.fillStyle = this.textColor;
-      if (this.isOnBoard && ctx == rackctx) {
-        return;
-      }
-      ctx.font = tileFont;
-      ctx.fillText(this.letter, this.x + cXpad, this.y + cYpad);
-      ctx.font = valueFont;
-      if (this.points > 9) {
-        var xp = vX2pad;
-      }
-      else {
-        var xp = vX1pad;
-      }
-      var v;
-      if (this.points > 0) {v = this.points}
-      else {v = '-'}
-      ctx.fillText(v, this.x + xp, this.y + vYpad);
-      ctx.strokeStyle = lineCol;
-      ctx.strokeRect(this.x, this.y, tileWidth, tileHeight);
-      return;
-    }
-    getBounds() {
-      return {
-        x: this.x,
-        y: this.y,
-        width: tileWidth,
-        height: tileWidth
-      }; 
-    }
-  }
-
-  
-  /**********************
-  
-  SETTING UP THE BOARD
-  
-  **********************/
-  
-  const ctx = board.getContext("2d");
-  ctx.fillStyle = bkgdCol;
-  ctx.fillRect(0, 0, width, height);
-  ctx.strokeStyle = lineCol;
-  
-  const args = seed.split("-");
-  var p1hand = args[0].split("");
-  const p1score = parseInt(args[1]);
-  var p2hand = args[2].split("");
-  const p2score = parseInt(args[3]);
-  var tilesString = "";
-  nargs = args.length
-  for (let i = 4; i < nargs; i++) {
-    if (!isNaN(args[i])) { // if the string is numeric
-    var skip = parseInt(args[i])
-    tilesString = tilesString + "-".repeat(skip)
-    }
-    else {
-    tilesString = tilesString + args[i]
-    }
-  }
-  const tiles = tilesString.split("")
-  
-  // set up the pot
-  var pot = ("JQZX" + "KFWYCV".repeat(2) + "_BMFP".repeat(3) + "TRSD".repeat(4) +
-     "NLHG".repeat(5) + "U".repeat(6) + "AIO".repeat(9) + "E".repeat(14)).split("");
-  
-  var firstMove;
-  if (seed == "-0--0-225") {
-    firstMove = true;
-    toggleInstructions();
-    ret = sample(pot, 14);
-    pot = ret[0];
-    p1hand = ret[1];
-    p2hand = p1hand.splice(0, 7);
-  }
-  else {
-    firstMove = false;
-    var tilesInPlay = tilesString.replaceAll('-', "").split("").concat(p1hand).concat(p2hand);
-    tlen = tilesInPlay.length
-    for (let i = 0; i < tlen; i++) {
-      cell = pot.indexOf(tilesInPlay[i]);
-      pot.splice(cell, 1);
-    }
-  }
-
-  
-  const keyboardLeft = 0;
-  const keyboardTop = 0;
-  const keyWidth = 35; 
-  const keyHeight = 35;
-  const keyColActive = newTileCol;
-  const keyColInactive = tileCol;
-  const keyFont = "28px courier";
-  const kXpad = 5;
-  const kYpad = 24;
-  const keyList = "abcdefghijklmnopqrstuvwxyz_".split("")
-  
-  function drawKeyboard(ctx) {   
-
-    ctx.fillStyle = newTileCol;
-    ctx.fillRect(0, 0, 315, 105)
-    ctx.fillStyle = newTileCol;
-    ctx.fillStyle = blankCol;
-    ctx.strokeStyle = "rgb(255, 255, 255)";
-    ctx.strokeRect(0, 0, 315, 105)
-    ctx.font = keyFont;
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 9; j++) {
-        x = keyboardLeft + keyWidth * j
-        y = keyboardTop + keyHeight * i
-        if (keyList[i*9 + j] == hand[currTileIndex].letter) {
-          ctx.fillStyle = selectedTileCol;
-          ctx.fillRect(x, y, keyWidth, keyHeight);
-          ctx.fillStyle = blankCol;
-        }
-        ctx.strokeRect(x, y, keyWidth, keyHeight)
-        ctx.fillText(keyList[i * 9 + j], x + kXpad, y + kYpad)
-      }
-    }     
-  }  
-  
-  /**********************
-  
-  SCOREBOARD
-  
-  **********************/
-  const GS = document.getElementById("gameStats");
-  if (p1score > p2score) { var status = `WINNING`; }
-  else if (p1score < p2score) { var status = `LOSING`; }
-  else { var status = `TIED`; }
-  if (p2name != null) {
-    var scoretext = document.createTextNode("You are currently " + status + 
-                         ", " + p1score + " – " + p2score + ", against " + p2name + ".");
-    var tiletext = document.createTextNode(pot.length + 
-                        " tiles left in the pot & " + p2hand.length + " tiles on " +
-                        p2name +"'s rack.")
-  }
-  else {
-    var scoretext = document.createTextNode("You are currently " + status + 
-                         ", " + p1score + " – " + p2score + ".");
-    var tiletext = document.createTextNode(pot.length + 
-                        " tiles left in the pot, & " + p2hand.length + " tiles on " +
-                        "your opponent's rack.")
-  }
-  const scorepara = document.createElement("p");
-  scorepara.appendChild(scoretext) 
-  
-  const tilepara = document.createElement("p")
-
-
-  tilepara.appendChild(tiletext);
-  GS.appendChild(scorepara);
-  GS.appendChild(tilepara);
-  
-    
-  // could add an option to shuffle the tiles in your hand by clearing them?
-  // place the tiles
-  
-/*  const RACK = document.getElementById("rack");
-  const hand = [];
-  var lhand = p1hand.length;
-  buttonClasses = ["w3-center", "w3-hover-khaki", "w3-button", "w3-brown"]
-  for (let i = 0; i < lhand; i ++) {
-    let cha = p1hand[i];
-    let chalink = document.createElement("a");
-    let chatext = document.createTextNode(cha + getValue(cha));
-    chalink.appendChild(chatext);
-    for (let j = 0; j < buttonClasses.length; j++) {
-      chalink.classList.add(buttonClasses[j]);
-    }
-    RACK.appendChild(chalink);
-  }  */
-  rack = document.getElementById("rack")
-  rackctx = rack.getContext("2d")
-  rackctx.fillStyle = rackCol;
-  rackctx.fillRect(0, 0, 300, 50)
-  const hand = [];
-  var lhand = p1hand.length;
-  for (let i = 0; i < lhand; i ++) {
-    var t = new handTile(p1hand[i], i);
-    t.placeTile(rackctx, -1);
-    hand.push(t)
-  } 
-     
-  // set up the board display, placing bonus tiles appropriately
-  blen = bonuses.length
-  for (let i = 0; i < blen; i++) {
-    addCell(ctx, decryptBonus(bonuses[i]), i);
-  }
-  
-  // now all the other drawing and editing will be on a separate, transparent canvas
-  
-  // const ctx2 = overlay.getContext("2d");
-  
-  
-  // add pre-existing tiles
-  tlen = tiles.length
-  for (let i = 0; i < tlen; i++) {
-    if (tiles[i] != "-") {
-    v = getValue(tiles[i]);
-    setTile(ctx, tiles[i], i, v);
-    }
   }
   
   function scoreWord(word) {
@@ -659,6 +375,313 @@
 
   }
   
+  /**********************
+  
+  BOARD SET UP AND TILE VALUES
+  
+  **********************/  
+  // initialize bonuses; triple/double [L/l]etters or [W/w]ords
+  const bonuses = ['W','.','.','l','.','.','.','W','.','.','.','l','.','.','W',
+                   '.','.','w','.','.','.','l','.','l','.','.','.','w','.','.',
+                   '.','w','.','.','.','L','.','.','.','L','.','.','.','w','.',
+                   'l','.','.','.','w','.','.','l','.','.','w','.','.','.','l',
+                   '.','.','.','w','.','.','.','.','.','.','.','w','.','.','.',
+                   '.','.','L','.','.','.','l','.','L','.','.','.','L','.','.',
+                   '.','l','.','.','.','L','.','.','.','l','.','.','.','l','.',
+                   'W','.','.','l','.','.','.','w','.','.','.','l','.','.','W',
+                   '.','l','.','.','.','l','.','.','.','L','.','.','.','l','.',
+                   '.','.','L','.','.','.','L','.','l','.','.','.','L','.','.',
+                   '.','.','.','w','.','.','.','.','.','.','.','w','.','.','.',
+                   'l','.','.','.','w','.','.','l','.','.','w','.','.','.','l',
+                   '.','w','.','.','.','L','.','.','.','L','.','.','.','w','.',
+                   '.','.','w','.','.','.','l','.','l','.','.','.','w','.','.',
+                   'W','.','.','l','.','.','.','W','.','.','.','l','.','.','W']    
+
+  // get the point value of any given letter
+  function getValue(letter) {
+    if ("AEIOUNSTR".includes(letter)) {return 1;}
+    if ("LDM".includes(letter)) {return 2;}
+    if ("GBCPH".includes(letter)) {return 3;}
+    if ("FWY".includes(letter)) {return 5;}
+    if ("VK".includes(letter)) {return 6;}
+    if ("JX".includes(letter)) {return 8;}
+    if ("Z".includes(letter)) {return 9;}
+    if ("Q".includes(letter)) {return 10;}
+    // lowercase letters AND "_" represent blanks
+    return 0;
+  }
+  
+  // for making & drawing the board itself
+  function addCell(ctx, bonus, cell) {
+    let y = (Math.floor(cell / 15)) * tHite;
+    let x = (cell % 15) * tWid;
+    
+    if (bonus == " 3L") {
+      ctx.fillStyle = tlCol;
+      ctx.font = bFont;
+    }
+    if (bonus == " 2L") {
+      ctx.fillStyle = dlCol;
+      ctx.font = bFont;
+    }
+    if (bonus == "3W") {
+      ctx.fillStyle = twCol;
+      ctx.font = bFont;
+    }
+    if (bonus == "2W") {
+      ctx.fillStyle = dwCol;
+      ctx.font = bFont;
+    }
+    if (bonus == ".") {
+      ctx.fillStyle = white;
+    }
+    if (cell == 112) { 
+      bonus = "🌻";
+      ctx.font = "30px arial"
+    }
+    ctx.fillRect(x, y, tWid, tHite);
+    
+    if (bonus != ".") {
+      ctx.fillStyle = white;
+      ctx.fillText(bonus, x + bXpad, y + bYpad);   
+    }
+
+    ctx.strokeStyle = shadow;
+    ctx.strokeRect(x, y, tWid, tHite);
+    return 0;
+  }
+   
+  // for adding pre-existing tiles to the board
+  function setTile(ctx, letter, cell, value) {
+     let y = (Math.floor(cell / 15)) * tHite;
+     let x = (cell % 15) * tWid;
+     ctx.fillStyle = cream;
+     ctx.fillRect(x, y, tWid, tHite);
+     ctx.strokeStyle = shadow;
+     ctx.strokeRect(x, y, tWid, tHite);
+     if (letter == letter.toLowerCase()) {
+       ctx.fillStyle = red;
+       ctx.font = tFont;
+     }
+     else {
+       ctx.fillStyle = black;
+       ctx.font = tFont;
+     }
+     ctx.fillText(letter, x + cXpad, y + cYpad);
+     if (value > 9) {
+       var xp = vX2pad;
+     }
+     else {
+       var xp = vX1pad;
+     }
+     ctx.font = vFont
+     if (value > 0) {v = value}
+     else {v = '-'}
+     ctx.fillText(v, x + xp, y + vYpad);
+     return 0;
+  }
+
+  /**********************
+  
+  HANDLING THE PLAYER'S TILES
+    
+  **********************/
+  class handTile {
+    constructor(letter, racki) {
+      this.i = racki;
+      this.oldCell = -1;
+      this.border = shadow;
+      this.width = 40;
+      this.height = 40;
+      this.letter = letter;
+      this.points = getValue(letter); // deprecate?
+      if (letter == letter.toLowerCase()) {
+        this.textColor = red;
+      }
+      else {
+        this.textColor = black;
+      }
+      this.isOnBoard = false;
+    }
+    placeTile(ctx, cell) {
+      // // alert("drawing " + this.letter + " at " + cell);
+      // if (cell == this.oldCell && cell > -1) {return 0;}
+      if (cell == -1) {
+        this.x = 42 * this.i + 4;
+        this.y = 5; 
+      }
+      else {
+        this.y = (Math.floor(cell / 15)) * tHite;
+        this.x = (cell % 15) * tWid; 
+      }
+      if (this.isOnBoard && ctx == rackctx) {
+        ctx.fillStyle = shadow;
+      }
+      else if (this.i == currTileIndex) {
+        ctx.fillStyle = brown;
+      }
+      else {
+        ctx.fillStyle = gold;
+      }
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.fillStyle = this.textColor;
+      if (this.isOnBoard && ctx == rackctx) {
+        return;
+      }
+      ctx.font = tFont;
+      ctx.fillText(this.letter, this.x + cXpad, this.y + cYpad);
+      ctx.font = vFont;
+      if (this.points > 9) {
+        var xp = vX2pad;
+      }
+      else {
+        var xp = vX1pad;
+      }
+      var v;
+      if (this.points > 0) {v = this.points}
+      else {v = '-'}
+      ctx.fillText(v, this.x + xp, this.y + vYpad);
+      ctx.strokeStyle = shadow;
+      ctx.strokeRect(this.x, this.y, tWid, tHite);
+      return;
+    }
+    getBounds() {
+      return {
+        x: this.x,
+        y: this.y,
+        width: tWid,
+        height: tWid
+      }; 
+    }
+  }
+  
+    
+  function drawKeyboard(ctx) {   
+
+    ctx.fillStyle = gold;
+    ctx.fillRect(0, 0, 315, 105)
+    ctx.fillStyle = gold;
+    ctx.fillStyle = red;
+    ctx.strokeStyle = "rgb(255, 255, 255)";
+    ctx.strokeRect(0, 0, 315, 105)
+    ctx.font = keyFont;
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 9; j++) {
+        x = keyWidth * j
+        y = keyHeight * i
+        if (keyList[i*9 + j] == hand[currTileIndex].letter) {
+          ctx.fillStyle = brown;
+          ctx.fillRect(x, y, keyWidth, keyHeight);
+          ctx.fillStyle = red;
+        }
+        ctx.strokeRect(x, y, keyWidth, keyHeight)
+        ctx.fillText(keyList[i * 9 + j], x + kXpad, y + kYpad)
+      }
+    }     
+  }  
+  
+  /**********************
+  
+  SETTING UP THE BOARD
+  
+  **********************/
+  
+  const ctx = board.getContext("2d");
+  ctx.fillStyle = white;
+  ctx.fillRect(0, 0, width, height);
+  ctx.strokeStyle = shadow;
+  
+  const args = seed.split("-");
+  var p1hand = decrypt(args[0]);
+  const p1score = parseInt(args[1]);
+  var p2hand = decrypt(args[2]);
+  const p2score = parseInt(args[3]);
+  const tiles = decodeTiles(args[4])
+  
+  // set up the pot
+  var pot = ("JQZX" + "KFWYCV".repeat(2) + "_BMFP".repeat(3) + "TRSD".repeat(4) +
+     "NLHG".repeat(5) + "U".repeat(6) + "AIO".repeat(9) + "E".repeat(14)).split("");
+  
+  if (seed == "-0--0-225") {
+    firstMove = true;
+    toggleInstructions();
+    ret = sample(pot, 14);
+    pot = ret[0];
+    p1hand = ret[1];
+    p2hand = p1hand.splice(0, 7);
+  }
+  else {
+    var tilesInPlay = args[4].replace(/[0-9]/g, '').split("").concat(p1hand).concat(p2hand);
+    let tlen = tilesInPlay.length
+    for (let i = 0; i < tlen; i++) {
+      cell = pot.indexOf(tilesInPlay[i]);
+      pot.splice(cell, 1);
+    }
+  }
+
+  /**********************
+  
+  SCOREBOARD
+  
+  **********************/
+  const GS = document.getElementById("gameStats");
+  if (p1score > p2score) { var status = `WINNING`; }
+  else if (p1score < p2score) { var status = `LOSING`; }
+  else { var status = `TIED`; }
+  if (p2name != null) {
+    var scoretext = document.createTextNode("You are currently " + status + 
+                         ", " + p1score + " – " + p2score + ", against " + p2name + ".");
+    var tiletext = document.createTextNode(pot.length + 
+                        " tiles left in the pot & " + p2hand.length + " tiles on " +
+                        p2name +"'s rack.")
+  }
+  else {
+    var scoretext = document.createTextNode("You are currently " + status + 
+                         ", " + p1score + " – " + p2score + ".");
+    var tiletext = document.createTextNode(pot.length + 
+                        " tiles left in the pot, & " + p2hand.length + " tiles on " +
+                        "your opponent's rack.")
+  }
+  const scorepara = document.createElement("p");
+  scorepara.appendChild(scoretext) 
+  
+  const tilepara = document.createElement("p")
+
+
+  tilepara.appendChild(tiletext);
+  GS.appendChild(scorepara);
+  GS.appendChild(tilepara);
+  
+  // place the tiles
+
+  rack = document.getElementById("rack")
+  rackctx = rack.getContext("2d")
+  rackctx.fillStyle = shadow;
+  rackctx.fillRect(0, 0, 300, 50)
+  const hand = [];
+  var lhand = p1hand.length;
+  for (let i = 0; i < lhand; i ++) {
+    var t = new handTile(p1hand[i], i);
+    t.placeTile(rackctx, -1);
+    hand.push(t)
+  } 
+     
+  // set up the board display, placing bonus tiles appropriately
+  blen = bonuses.length
+  for (let i = 0; i < blen; i++) {
+    addCell(ctx, decryptBonus(bonuses[i]), i);
+  }  
+  
+  // add pre-existing tiles
+  tlen = tiles.length
+  for (let i = 0; i < tlen; i++) {
+    if (tiles[i] != "-") {
+    v = getValue(tiles[i]);
+    setTile(ctx, tiles[i], i, v);
+    }
+  }
+  
+  
   var SE = {score: 0, error: "Please play at least one tile.\nClick on a tile to select it, then on the board to place it."};
   // var SE = score("LAY", [94, 95, 96])
 
@@ -669,9 +692,9 @@
   function shuffleTiles(ctx) {
     hideKeyboard()
     currTileIndex = -1;
-    rackctx.fillStyle = rackCol;
+    rackctx.fillStyle = shadow;
     rackctx.fillRect(0, 0, 300, 50)
-    rackctx.fillStyle = newTileCol;
+    rackctx.fillStyle = gold;
     let N = hand.length;
     const numbers = Array.from(Array(N).keys());
     let newPos = sample(numbers, N)[1];
@@ -789,29 +812,13 @@
     
     let c = 0
     boardcode = []
-    boardcode.push(p2hand.join(""), p2score, newHand.join(""), (p1score + SE.score))
-    while (c < 225) {
-      let w = []
-      while (c < 225 && tiles[c] != "-") {
-        w.push(tiles[c]);
-        c++;
-      }
-      if (w.length > 0) {boardcode.push(w.join(""));}
-      let blanks = 0;
-      while (c < 225 && tiles[c] == "-") {
-        blanks++;
-        c++;
-      }
-      if (blanks > 0) {
-        boardcode.push(blanks);
-      }
-    }
-    codestring = boardcode.join("-");
+    boardcode.push(encrypt(p2hand), p2score, encrypt(newHand), (p1score + SE.score), encodeTiles(tiles))
+    newSeed = boardcode.join("-");
     if (p1name != null) {var name1 = "&p1=" + p2name;}
     else {var name1 = ""}
     if (p2name != null) {var name2 = "&p2=" + p1name;}
     else {var name2 = ""}
-    url = "https://bennettmcintosh.com/words?seed=" + codestring + name1 + name2
+    url = "https://bennettmcintosh.com/words?seed=" + newSeed + name1 + name2
     // alert("you drew " + newTiles + "\n\n" + url)
     
     let conf = document.getElementById("confirmation");
@@ -821,12 +828,10 @@
     
     // congrats = "Congratulations – you played " + SE.word + " for " + SE.score + " points!\n" + 
     //           "You drew: " + newTiles + " so your hand is now: " + newHand + ".";
-    congrats = `Congratulations – you played ${SE.word} for ${SE.score} points!
-    ` + 
-               `You drew: ${newTiles}, so your hand is now: ${newHand}.`
+    congrats = `Congratulations – you played ${SE.word} for ${SE.score} points! But WAIT you’re not done yet...`
 
-    newScore = `The score is now ${p1score + SE.score} (you) to ${p2score} (your opponent).`
-    instruct = "Please click on this button to send an email to your opponent so they can make their move."
+    newScore = `You drew: ${newTiles}, so your hand is now: ${newHand}. The score is now ${p1score + SE.score} (you) to ${p2score} (your opponent).`
+    instruct = "Please click on this button to generate an email for you to send to your opponent so they can make their move."
     
     document.getElementById("congrats").innerHTML = congrats
     
@@ -887,7 +892,7 @@
     let xy = getMousePos(rack, event);
     let x = xy.x;
     let y = xy.y;
-    let pos = Math.floor((x - 4) / (tileWidth + 2));
+    let pos = Math.floor((x - 4) / (tWid + 2));
     if (pos < 0) {pos = 0;}
     if (pos >= hand.length) {pos = hand.length - 1}
     if (hand[pos].isOnBoard) { // return the tile to the rack
@@ -927,8 +932,8 @@
     hideKeyboard();
     // get the coordinates of the click
     let xy = getMousePos(board, event);
-    let row = Math.floor(xy.x / tileWidth);
-    let col = Math.floor(xy.y / tileHeight);
+    let row = Math.floor(xy.x / tWid);
+    let col = Math.floor(xy.y / tHite);
     var cell = row + 15 * col;
 
     // ignore clicks on existing tiles

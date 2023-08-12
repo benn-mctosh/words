@@ -104,7 +104,8 @@
           </tr>          
         </table>  
         <ul hidden id="instructions" style="text-align:left!important;">
-          <li>Form words by clicking in the tiles in your hand, then clicking on the board to place the tiles.</li>
+          <li>Click on a tile to select it, then click on an empty space—on the board or on your rack—to move it there.</li>
+          <li>Form words by placing tiles on the board. The fist play must include the central (sunflower) square; later plays must include at least one previously played tile.</li>
           <li>Once you have made a word, the “Play” button above will turn green — click the “Play” button, and you will be able to generate an email to send to your opponent so they can make their next move</li>
           <li>You can look up words in the official Scrabble dictionary (which may be slightly different from the dictionary I’m using) or see how many tiles of each letter there are in this game using the links above. </li>
           <li>Some tiles are blank (‘_’). These are worth no points, but when you select them you can change which letter they represent. Once you have played a blank tile, it represents the same letter for all future moves, but it will show up as red and lowercase, and continue to be worth 0 points.</li>
@@ -117,20 +118,17 @@
       </div>   
     </div>
     
-    <div hidden class="w3-col l4 w3-white w3-container w3-center" style="margin-top:30px;margin-left:50px;max-width:600px;box-shadow:5px 5px #ccccaa" id="tileSwapper"> </div>
+    <div hidden id="tileSwapper" class="w3-col l4 w3-white w3-container w3-center" style="margin-top:30px;margin-left:50px;max-width:600px;box-shadow:5px 5px #ccccaa"> 
     
-    <div hidden class="w3-col l4 w3-white w3-container w3-center" style="margin-top:30px;margin-left:50px;max-width:600px;box-shadow:5px 5px #ccccaa" id="confirmation"> 
+    </div>
+    
+    <div hidden id="confirmation" class="w3-col l4 w3-white w3-container w3-center" style="margin-top:30px;margin-left:50px;max-width:600px;box-shadow:5px 5px #ccccaa"> 
       <p id="congrats">Congratulations! You played <node id="playedWord">__</node> for <node id="scoredPoints">###</node> points!</p>
       <p id="newScore">The score is now #1 (you) to #2 (your opponent)</node>.</p>
       <p id="emailInstruct">Please click on this button to send an email to your opponent so they can make their move:</p>
       <a href="" id="sendEmail" target="_blank" style="margin:10px;width:185px" class="w3-center w3-hover-pale-blue w3-button w3-light-blue">✉️ Send Email</a>
       <p>If that button doesn't work, you can copy and paste the text below:</p>
       <div id="emailText" style="margin-bottom:20px;padding:10px;font:14px courier;text-align:left!important;" class="w3-left w3-light-gray">
-        <p>Hi Bennett,</p><p>
-        I've made my move in our Words game! I played XXXX for ## points, so you are now YYYYY, ### – ###.</p><p>
-        To make your move, click this link, or copy it into your navigation bar.</p><p>
-        <a href="https://bennettmcintosh.com/words?seed=IABI_OM-0-OGFDVEG-08-112-AB-111&p1=Bennett&p2=Carolyn">https://bennettmcintosh.com/words?seed=IABI_OM-0-OGFDVEG-08-112-AB-111&p1=Bennett&p2=Carolyn</a></p><p>
-        Happy word-making!</p>
     </p>
     </div>
     </div>
@@ -139,9 +137,12 @@
   </div>
 
 
-<script type="text/javascript" src=loadDict.js></script>
+<script type="text/javascript" src="loadDict.js"></script>
 
 <script type="text/javascript" src="words.js"></script>
+
+<script type="text/javascript" src="gamePlay.js"</script>
+
 </body>
 </html>
 
