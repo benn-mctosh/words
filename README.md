@@ -46,8 +46,8 @@ For the first move in which a tile is placed on these cells, these multiply the 
 ## Known issues/future features
 
 * The game interprets `p1` and `p2` parameters in the URL as player one and player two’s names, but those aren’t currently added to the URL that gets sent to your oppnent.
-* The `seed` parameter currently includes both players’ hands in cleartext. Will soon implement a simple encryption/compression procedure to discourage peeking at your opponent’s hand
-* The `discard/swap` button has not yet been implemented
+* Recent sortening to the `seed` parameter means there's no opportunity for a linebreak, so the email displayed at the end breaks the CSS formatting. 
+* The `discard/swap` button has not yet been implemented.
 * There’s debate among players (even within my own family) whether it’s more fun for a game to tell you in real-time whether the word you’re considering is legal, or to make you wait until pressing the `Play` button. As currently implemented, this game tells you in real time (because that’s how Grandma likes it!), but I might add an option to toggle that later. 
 
 Also of note: I provide a link to the *Official SCRABBLE® Players' Dictionary* (*OSPD*), because that provides a useful search tool for prefixes/suffixes, etc., but this game doesn't use *OSPD*. So the game may reject a play that would be valid per *OSPD* or vice versa. 
