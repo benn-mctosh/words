@@ -1,14 +1,16 @@
-  // add options to pass 
-  // disallow single-letter play on first move
-  
+  // test seed = 'PLAYER_-0-PLAYER_-0-110-HeLLQ-110'; 
+  // add options to pass and play (by changing play button - current task)
+  // add encrypter for hands
+  // generate email and mailto link
+  // low-priority: fix bug where attaching a blank on a blank is invalid
   let params = new URLSearchParams(location.search);
   var seed = params.get('seed')
   if (seed == null) {
-    seed = 'qqqqqq-qqqqqq-0-0-225'; 
-    //this would decrypt to "" in each hand but is handled by an if statement anyway
+    seed = '-0--0-225';
   }
   const p1name = params.get('p1')
   const p2name = params.get('p2')
+  // when encrypted, 'PLAYER_' should read 'jvobAY'
   const board = document.querySelector(".gameBoard");
   
   /**********************
@@ -43,9 +45,9 @@
   const vYpad = 15;
   const bXpad = 5;
   const bYpad = 28;
-  const kWid = 35; 
-  const kHite = 35;
-  const kFont = "28px courier";
+  const keyWidth = 35; 
+  const keyHeight = 35;
+  const keyFont = "28px courier";
   const kXpad = 5;
   const kYpad = 24;
   const keyList = "abcdefghijklmnopqrstuvwxyz_".split("")  
@@ -104,10 +106,6 @@
     }
     return decryption;
     
-  }
-  
-  function compareTile(a,b) {
-    return a.i - b.i
   }
   
   function encodeTiles(t) {  
@@ -205,7 +203,7 @@
     const branchWord = [letter];
     let head = cell - m;
     let tail = cell + m;
-    while (head >= MIN) {
+    while (head > MIN) {
       if (tiles[head] == "-") { 
         // alert("found head at " + head + " word is "  + word)
         break; 
@@ -292,7 +290,7 @@
         // // alert(stem[i])
         // // alert(cell)
         let branch = findBranch(stem[i], cell, "v")
-        // branches.push(branch)
+        branches.push(branch)
         // if (!dictionary.includes(branch.join("").toUpperCase())) {
           // return {score: NaN, error: "invalid word: " + branch.join("")}
         // }
@@ -346,7 +344,7 @@
         // // alert(stem[i])
         // // alert(cell)
         let branch = findBranch(stem[i], cell, "h")
-        // branches.push(branch)
+        branches.push(branch)
 
         if (branch.length > 1) {
           // alert("h branch: " + branch + " of length " + branch.length)
@@ -372,16 +370,9 @@
     if (stem.length > 1) {
       score += (scoreWord(stem) + addends.reduce((i, j) => i + j)) * 
           factors.reduce((i, j) => i * j);
-      return {score: score, error: "", word : stem.join(""), branches: branches}
+    }
+    return {score: score, error: "", word : stem.join(""), branches: branches}
 
-    }
-    else if (branches.length == 0) {
-      return {score: NaN, error: "Single-letter words are not valid"}
-    }
-    else {
-      return {score: score, error: "", word: branches[0].join(""), branches: [stem]}
-    
-    }
   }
   
   /**********************
@@ -573,17 +564,17 @@
     ctx.fillStyle = red;
     ctx.strokeStyle = "rgb(255, 255, 255)";
     ctx.strokeRect(0, 0, 315, 105)
-    ctx.font = kFont;
+    ctx.font = keyFont;
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 9; j++) {
-        x = kWid * j
-        y = kHite * i
+        x = keyWidth * j
+        y = keyHeight * i
         if (keyList[i*9 + j] == hand[currTileIndex].letter) {
           ctx.fillStyle = brown;
-          ctx.fillRect(x, y, kWid, kHite);
+          ctx.fillRect(x, y, keyWidth, keyHeight);
           ctx.fillStyle = red;
         }
-        ctx.strokeRect(x, y, kWid, kHite)
+        ctx.strokeRect(x, y, keyWidth, keyHeight)
         ctx.fillText(keyList[i * 9 + j], x + kXpad, y + kYpad)
       }
     }     
@@ -600,18 +591,18 @@
   ctx.fillRect(0, 0, width, height);
   ctx.strokeStyle = shadow;
   
-  var p1hand = decrypt(seed.slice(0,6));
-  var p2hand = decrypt(seed.slice(7,13));
-  const args = seed.slice(14,seed.length).split("-");
-  const p1score = parseInt(args[0]);
-  const p2score = parseInt(args[1]);
-  const tiles = decodeTiles(args[2])
+  const args = seed.split("-");
+  var p1hand = decrypt(args[0]);
+  const p1score = parseInt(args[1]);
+  var p2hand = decrypt(args[2]);
+  const p2score = parseInt(args[3]);
+  const tiles = decodeTiles(args[4])
   
   // set up the pot
-  var pot = ("JQZX" + "KFWYCV".repeat(2) + "BMFP".repeat(3) + "TRSD_".repeat(4) +
+  var pot = ("JQZX" + "KFWYCV".repeat(2) + "BMFP".repeat(3) + "_TRSD".repeat(4) +
      "NLHG".repeat(5) + "U".repeat(6) + "AIO".repeat(9) + "E".repeat(14)).split("");
   
-  if (seed == "qqqqqq-qqqqqq-0-0-225") {
+  if (seed == "-0--0-225") {
     firstMove = true;
     toggleInstructions();
     ret = sample(pot, 14);
@@ -620,15 +611,10 @@
     p2hand = p1hand.splice(0, 7);
   }
   else {
-    var tilesInPlay = args[2].replace(/[0-9]/g, '').split("").concat(p1hand).concat(p2hand);
+    var tilesInPlay = args[4].replace(/[0-9]/g, '').split("").concat(p1hand).concat(p2hand);
     let tlen = tilesInPlay.length
     for (let i = 0; i < tlen; i++) {
-      if (tilesInPlay[i].toLowerCase() == tilesInPlay[i]) {
-        cell = pot.indexOf("_");
-      }
-      else {
-        cell = pot.indexOf(tilesInPlay[i])
-      }
+      cell = pot.indexOf(tilesInPlay[i]);
       pot.splice(cell, 1);
     }
   }
@@ -716,7 +702,7 @@
       hand[i].i = newPos[i];
       hand[i].placeTile(ctx, -1);
     }
-    hand.sort( compareTile );
+    hand.sort( compare );
   } 
 //  document.getElementById("shuffle").addEventListener("click", alert("clicked shuffle"));
    
@@ -762,7 +748,7 @@
       }
       SE = score(letters, cells);
       let b = document.getElementById("play")
-      if (SE.score > -1) {
+      if (SE.score > 0) {
         b.classList.remove("w3-light-gray")
         b.classList.add("w3-green")
         let text = ("✅ Play for " + SE.score + " points!")
@@ -794,13 +780,52 @@
   }
   
   function swapTiles() {
-   alert("Sorry, this button isn't working yet!!\n\nLet Bennett know you want to swap tiles and we'll figure something out.")
-   return false;
+    currTileIndex = -1;
+    currCellIndex = -1; 
+    for (let i = 0; i < lhand; i ++) {
+      hand[i].isOnBoard = false;
+    }
+    let swpr = document.getElementById("tileSwapper");
+    swpr.removeAttribute("hidden");
+    let sb = document.getElementById("scoreboard");
+    sb.setAttribute("hidden", false);
+    let checklist = document.getElementById("checklist");
+    for (let i = 0; i < hand.length; i++) {
+      let x = document.createElement("INPUT")
+      x.setAttribute("type", "checkbox");
+      x.setAttribute("id", "i".concat(i));
+      x.setAttribute("name", hand[i].letter.concat(i));
+      x.setAttribute("style", "margin-left:10px");
+      x.checked = false;
+      checklist.appendChild(x)
+      let y = document.createElement("label")
+      y.setAttribute("for", "i".concat(i));
+      y.setAttribute("style", "margin-right:10px")
+      z = document.createTextNode(" ".concat(hand[i].letter))
+      y.appendChild(z)
+      checklist.appendChild(y)
+    }     
+    return false;
+    // prevent discard if more tiles are checked than remain in pot
   }
   
-  function submitPlay() {
-    if (!(SE.score > -1)) {
-     alert("Sorry, this isn't a valid move.\n" + SE.error)
+  function submitDiscard() {
+    // get the tiles checked
+    if (discarded.length > pot.length) {
+      alert(`You are trying to discard ${discarded.length} tiles, but there are only ${pot.length} tiles in the pot.\n\nPlease select only ${pot.length} or fewer tiles`)
+      return;
+    }
+    
+  
+    // set all checked tiles to "on board"
+    // make the word from the discarded tiles
+    SE = {score: 0, word: 'm'/* letters discarded */, error: ""};
+    submitPlay(true);
+  }
+  
+  function submitPlay(discard = false) {
+    if (!(SE.score > 0) && !discard) {
+      alert("Sorry, this isn't a valid move.\n" + SE.error)
       return;
     }
     
@@ -810,30 +835,38 @@
     
     // played tiles to board; unplayed tiles to new hand
     const newHand = []
-    for (let i = 0; i < lhand; i++) {
-      if (hand[i].isOnBoard) {
-         tiles[hand[i].oldCell] = hand[i].letter;
-      }
-      else if (hand[i].letter != hand[i].letter.toLowerCase()) {
-        newHand.push(hand[i].letter);
+    if (!discard) {
+        var lippet = 0;
+        for (let i = 0; i < lhand; i++) {
+          if (hand[i].isOnBoard) {
+             pot.push(hand[i].letter);
+          }
+          else if (hand[i].letter != hand[i].letter.toLowerCase()) {
+            newHand.push(hand[i].letter);
+          }
+          else {newHand.push('_');}
         }
-      else {newHand.push('_');}
     }
-    
-    if (pot.length == 0 && newHand.length == 0) {
-      // add score from play and from opponent's hand
-      // 
-      // status => won/lost/tied
+    else { // or, in case of discard, discarded tiles to pot
+        for (let i = 0; i < lhand; i++) {
+          if (hand[i].isOnBoard) {
+             tiles[hand[i].oldCell] = hand[i].letter;
+          }
+          else if (hand[i].letter != hand[i].letter.toLowerCase()) {
+            newHand.push(hand[i].letter);
+          }
+          else {newHand.push('_');}
+        }
+        var lippet = SE.word.length // to keep sample from returning discarded tiles
     }
-    
-    drawResult = sample(pot, Math.min(pot.length, 7 - newHand.length))
+    drawResult = sample(pot, Math.min(pot.length - lippet, 7 - newHand.length))
     newTiles = drawResult[1]
     pot = drawResult[0]
     newHand.push(...newTiles)
     
     let c = 0
     boardcode = []
-    boardcode.push(encrypt(p2hand), encrypt(newHand), p2score, (p1score + SE.score), encodeTiles(tiles))
+    boardcode.push(encrypt(p2hand), p2score, encrypt(newHand), (p1score + SE.score), encodeTiles(tiles))
     newSeed = boardcode.join("-");
     if (p1name != null) {var name1 = "&p1=" + p2name;}
     else {var name1 = ""}
@@ -849,8 +882,17 @@
     
     // congrats = "Congratulations – you played " + SE.word + " for " + SE.score + " points!\n" + 
     //           "You drew: " + newTiles + " so your hand is now: " + newHand + ".";
-    congrats = `Congratulations – you played ${SE.word} for ${SE.score} points! But WAIT you’re not done yet...`
-
+    if (!discard) { 
+      congrats = `Congratulations – you played ${SE.word} for ${SE.score} points! But WAIT you’re not done yet...`
+    }
+    else if (SE.word.length > 0) {
+      congrats = `You have swapped out ${SE.word}. But WAIT you’re not done yet...`
+    }
+    else {
+      congrats = `You have passed on your turn. But WAIT you’re not done yet...`
+    }
+    
+    
     newScore = `You drew: ${newTiles}, so your hand is now: ${newHand}. The score is now ${p1score + SE.score} (you) to ${p2score} (your opponent).`
     instruct = "Please click on this button to generate an email for you to send to your opponent so they can make their move."
     
@@ -896,8 +938,8 @@
     if (t < 0) { return; }
     if (hand[t].letter == hand[t].letter.toLowerCase()) {
       let xy = getMousePos(document.getElementById("keyboard"), event);
-      let row = Math.floor(xy.x / kWid);
-      let col = Math.floor(xy.y / kHite);
+      let row = Math.floor(xy.x / keyWidth);
+      let col = Math.floor(xy.y / keyHeight);
       let i = row + 9 * col;
       hand[t].letter = "abcdefghijklmnopqrstuvwxyz_"[i];
       if (hand[t].isOnBoard) { hand[t].placeTile(ctx, hand[t].oldCell); }
