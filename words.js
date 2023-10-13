@@ -273,7 +273,10 @@
         if (tiles[i] == "-" && !cells.includes(i)) {
           return {score: NaN, error: ("Tiles must form a single word; you skipped cell " + i)};
         }
-        if (tiles[i] != "-" & !isAttached) {isAttached = true;}
+        if ((tiles[i] != "-") && !isAttached) {
+         // alert("changing isAttached on h stem case")
+          isAttached = true;
+        }
         stem.push(tiles[i])
       }
       while (stem.includes("-")) {
@@ -301,6 +304,7 @@
           // alert("v branch: " + branch + " of length " + branch.length)
 
            // alert("branch: " + branch)
+           // alert("changing isAttached on h branch case")
             isAttached = true;  
             if (!dictionary.includes(branch.join("").toUpperCase())) {
               return {score: NaN, error: "Invalid branch word: " + branch.join(""), branches: branches}
@@ -327,9 +331,16 @@
         if (tiles[i] == "-" && !cells.includes(i)) {
           return {score: NaN, error: "Tiles must form a single word, you skipped cell " + i};
         }
+        if ((tiles[i] != "-") && !isAttached) {
+         // alert("changing isAttached on v stem case")
+          isAttached = true;
+        }
         stem.push(tiles[i])
       }
-      if (stem.includes("-")) {isAttached = true;}
+//      if (stem.includes("-")) {
+//        alert("stem = " + stem)
+//        isAttached = true;
+//      }
       while (stem.includes("-")) {
         // alert("vert stem: " + stem)
         let i = stem.indexOf("-");
@@ -354,6 +365,7 @@
             if (!dictionary.includes(branch.join("").toUpperCase())) {
               return {score: NaN, error: "Invalid branch word: " + branch.join(""), branches: branches}
             }      
+           // alert("changing isAttached on branch case")
             isAttached = true;  
           score += (scoreWord(branch) + addends[addends.length - 1]) * 
                    factors[factors.length - 1];
@@ -708,6 +720,16 @@
     }
   }
   
+  function toggleInstructions() {
+    let ds = document.getElementById("instructions")
+    if (ds.hasAttribute("hidden")) {
+      ds.removeAttribute("hidden");
+    }
+    else {
+      ds.setAttribute("hidden", false)
+    }
+  }
+  
   if (GO == false) {
       var SE = {score: 0, error: "Please play at least one tile.\nClick on a tile to select it, then on the board to place it."};
       // var SE = score("LAY", [94, 95, 96])
@@ -744,16 +766,6 @@
         let k = document.getElementById("keyboard")
         k.setAttribute("hidden", false)
       } 
-      
-      function toggleInstructions() {
-        let ds = document.getElementById("instructions")
-        if (ds.hasAttribute("hidden")) {
-          ds.removeAttribute("hidden");
-        }
-        else {
-          ds.setAttribute("hidden", false)
-        }
-      }
       
       function toggleLetterCount() {
         let tc = document.getElementById("tilecounter")
