@@ -1,5 +1,5 @@
   // add options to pass 
-  // disallow single-letter play on first move
+  // if pot and p2hand are empty, show new game text
   
   let params = new URLSearchParams(location.search);
   var seed = params.get('seed')
@@ -10,6 +10,7 @@
   const p1name = params.get('p1')
   const p2name = params.get('p2')
   const board = document.querySelector(".gameBoard");
+  const GO = params.get('go') == '1';
   
   /**********************
   
@@ -510,7 +511,7 @@
       else {
         this.textColor = black;
       }
-      this.isOnBoard = false;
+      this.isOnBoard = false; 
     }
     placeTile(ctx, cell) {
       // // alert("drawing " + this.letter + " at " + cell);
@@ -603,8 +604,8 @@
   var p1hand = decrypt(seed.slice(0,6));
   var p2hand = decrypt(seed.slice(7,13));
   const args = seed.slice(14,seed.length).split("-");
-  const p1score = parseInt(args[0]);
-  const p2score = parseInt(args[1]);
+  var p1score = parseInt(args[0]);
+  var p2score = parseInt(args[1]);
   const tiles = decodeTiles(args[2])
   
   // set up the pot
@@ -639,32 +640,44 @@
   
   **********************/
   const GS = document.getElementById("gameStats");
-  if (p1score > p2score) { var status = `WINNING`; }
-  else if (p1score < p2score) { var status = `LOSING`; }
-  else { var status = `TIED`; }
-  if (p2name != null) {
-    var scoretext = document.createTextNode("You are currently " + status + 
-                         ", " + p1score + " – " + p2score + ", against " + p2name + ".");
-    var tiletext = document.createTextNode(pot.length + 
-                        " tiles left in the pot & " + p2hand.length + " tiles on " +
-                        p2name +"'s rack.")
+  if (GO) {
+      var status = ['lost', 'tied', 'won'][(p1score > p2score) + (p1score >= p2score)]
+      var scoretext = document.createTextNode(`You have ${status}, ${p1score} to ${p2score}`);
+      var tiletext = document.createTextNode("The tiles left in your hand have been added to your opponent’s score. Click the button below to start a new game.")
+      let b1 = document.getElementById("b1")
+      b1.setAttribute('hidden', false)
+      let b2 = document.getElementById("b2")
+      b2.setAttribute('hidden', false)
+      let b3 = document.getElementById("b3")
+      b3.setAttribute('hidden', false)
+      let newGame = document.getElementById('newGame')
+      newGame.removeAttribute('hidden')
   }
   else {
-    var scoretext = document.createTextNode("You are currently " + status + 
-                         ", " + p1score + " – " + p2score + ".");
-    var tiletext = document.createTextNode(pot.length + 
-                        " tiles left in the pot, & " + p2hand.length + " tiles on " +
-                        "your opponent's rack.")
+      var status = ['LOSING', 'TIED', 'WINNING'][(p1score > p2score) + (p1score >= p2score)]
+
+      if (p2name != null) {
+        var scoretext = document.createTextNode("You are currently " + status + 
+                             ", " + p1score + " – " + p2score + ", against " + p2name + ".");
+        var tiletext = document.createTextNode(pot.length + 
+                            " tiles left in the pot & " + p2hand.length + " tiles on " +
+                            p2name +"'s rack.")
+      }
+      else {
+        var scoretext = document.createTextNode("You are currently " + status + 
+                             ", " + p1score + " – " + p2score + ".");
+        var tiletext = document.createTextNode(pot.length + 
+                            " tiles left in the pot, & " + p2hand.length + " tiles on " +
+                            "your opponent's rack.")
+      }
   }
-  const scorepara = document.createElement("p");
-  scorepara.appendChild(scoretext) 
-  
-  const tilepara = document.createElement("p")
-
-
-  tilepara.appendChild(tiletext);
-  GS.appendChild(scorepara);
-  GS.appendChild(tilepara);
+    const scorepara = document.createElement("p");
+    scorepara.appendChild(scoretext) 
+    
+    const tilepara = document.createElement("p")
+    tilepara.appendChild(tiletext);
+    GS.appendChild(scorepara);
+    GS.appendChild(tilepara);
   
   // place the tiles
 
@@ -695,311 +708,365 @@
     }
   }
   
-  
-  var SE = {score: 0, error: "Please play at least one tile.\nClick on a tile to select it, then on the board to place it."};
-  // var SE = score("LAY", [94, 95, 96])
-
-  var clickOnTile;
-  const letters = [];
-  const cells = [];
-  
-  function shuffleTiles(ctx) {
-    hideKeyboard()
-    currTileIndex = -1;
-    rackctx.fillStyle = shadow;
-    rackctx.fillRect(0, 0, 300, 50)
-    rackctx.fillStyle = gold;
-    let N = hand.length;
-    const numbers = Array.from(Array(N).keys());
-    let newPos = sample(numbers, N)[1];
-    for (let i = 0; i < N; i++) {
-      hand[i].i = newPos[i];
-      hand[i].placeTile(ctx, -1);
-    }
-    hand.sort( compareTile );
-  } 
-//  document.getElementById("shuffle").addEventListener("click", alert("clicked shuffle"));
-   
-  function showKeyboard() {
-    let k = document.getElementById("keyboard");
-    k.removeAttribute("hidden");
-    const kctx = k.getContext("2d");
-    drawKeyboard(kctx);
-  } 
-  
-  function hideKeyboard() {
-    let k = document.getElementById("keyboard")
-    k.setAttribute("hidden", false)
-  } 
-  
-  function toggleInstructions() {
-    let ds = document.getElementById("instructions")
-    if (ds.hasAttribute("hidden")) {
-      ds.removeAttribute("hidden");
-    }
-    else {
-      ds.setAttribute("hidden", false)
-    }
-  }
-  
-  function toggleLetterCount() {
-    let tc = document.getElementById("tilecounter")
-    if (tc.hasAttribute("hidden")) {
-      tc.removeAttribute("hidden");
-    }
-    else {
-      tc.setAttribute("hidden", false)
-    }
-  }  
-  function reviseScore() {
-      letters.length = 0;
-      cells.length = 0;
-      for (let i = 0; i < lhand; i++) {
-        if (hand[i].oldCell > -1) {
-          letters.push(hand[i].letter);
-          cells.push(hand[i].oldCell);
-        }
-      }
-      SE = score(letters, cells);
-      let b = document.getElementById("play")
-      if (SE.score > -1) {
-        b.classList.remove("w3-light-gray")
-        b.classList.add("w3-green")
-        let text = ("✅ Play for " + SE.score + " points!")
-        let bContent = document.createTextNode(text)
-        b.removeChild(b.firstChild)
-        b.appendChild(bContent)
-      }
-      else {
-        b.classList.remove("w3-green")
-        b.classList.add("w3-light-gray")
-        let text = ("☑️ Play for -- points")
-        let bContent = document.createTextNode(text)
-        b.removeChild(b.firstChild)
-        b.appendChild(bContent)
-      }
-  }
-  
-  function clearTiles() {
-    for (let i = 0; i < lhand; i++) {
-      if (hand[i].isOnBoard) {
-        hand[i].isOnBoard = false;
-        let c = hand[i].oldCell;
-        addCell(ctx, decryptBonus(bonuses[c]), c);
-        hand[i].placeTile(rackctx, -1);
-        hand[i].oldCell = -1;
-      }
-    }
-    reviseScore()
-  }
-  
-  function swapTiles() {
-   alert("Sorry, this button isn't working yet!!\n\nLet Bennett know you want to swap tiles and we'll figure something out.")
-   return false;
-  }
-  
-  function submitPlay() {
-    if (!(SE.score > -1)) {
-     alert("Sorry, this isn't a valid move.\n" + SE.error)
-      return;
-    }
+  if (GO == false) {
+      var SE = {score: 0, error: "Please play at least one tile.\nClick on a tile to select it, then on the board to place it."};
+      // var SE = score("LAY", [94, 95, 96])
     
-    if (p1score + SE.score > p2score) { var newStatus = `winning`; }
-    else if (p1score + SE.score < p2score) { var newStatus = `losing`; }
-    else { var newStatus = `tied`; }
-    
-    // played tiles to board; unplayed tiles to new hand
-    const newHand = []
-    for (let i = 0; i < lhand; i++) {
-      if (hand[i].isOnBoard) {
-         tiles[hand[i].oldCell] = hand[i].letter;
-      }
-      else if (hand[i].letter != hand[i].letter.toLowerCase()) {
-        newHand.push(hand[i].letter);
-        }
-      else {newHand.push('_');}
-    }
-    
-    if (pot.length == 0 && newHand.length == 0) {
-      // add score from play and from opponent's hand
-      // 
-      // status => won/lost/tied
-    }
-    
-    drawResult = sample(pot, Math.min(pot.length, 7 - newHand.length))
-    newTiles = drawResult[1]
-    pot = drawResult[0]
-    newHand.push(...newTiles)
-    
-    let c = 0
-    boardcode = []
-    boardcode.push(encrypt(p2hand), encrypt(newHand), p2score, (p1score + SE.score), encodeTiles(tiles))
-    newSeed = boardcode.join("-");
-    if (p1name != null) {var name1 = "&p1=" + p2name;}
-    else {var name1 = ""}
-    if (p2name != null) {var name2 = "&p2=" + p1name;}
-    else {var name2 = ""}
-    url = "https://bennettmcintosh.com/words?seed=" + newSeed + name1 + name2
-    // alert("you drew " + newTiles + "\n\n" + url)
-    
-    let conf = document.getElementById("confirmation");
-    conf.removeAttribute("hidden");
-    let sb = document.getElementById("scoreboard");
-    sb.setAttribute("hidden", false); 
-    
-    // congrats = "Congratulations – you played " + SE.word + " for " + SE.score + " points!\n" + 
-    //           "You drew: " + newTiles + " so your hand is now: " + newHand + ".";
-    congrats = `Congratulations – you played ${SE.word} for ${SE.score} points! But WAIT you’re not done yet...`
-
-    newScore = `You drew: ${newTiles}, so your hand is now: ${newHand}. The score is now ${p1score + SE.score} (you) to ${p2score} (your opponent).`
-    instruct = "Please click on this button to generate an email for you to send to your opponent so they can make their move."
-    
-    document.getElementById("congrats").innerHTML = congrats
-    
-    if (p2name != null) {
-      document.getElementById("newScore").innerHTML = newScore.replace("your opponent", p2name)
-      document.getElementById("emailInstruct").innerHTML = instruct.replace("your opponent", p2name)
-    }
-    else {
-      document.getElementById("newScore").innerHTML = newScore
-      document.getElementById("emailInstruct").innerHTML = instruct
-    }
-    if (p2name == null) {var salutation = "Hi,"}
-    else { var salutation = `Hi ${p2name},`}
-    if (p1name == null) {var closing = ""}
-    else {var closing = `${p1name}`;}
-    emailText = [`${salutation}`,
-    `I’ve made my move in our Words game — I played ${SE.word} for ${SE.score} points, so I am now ${newStatus}, ${p1score + SE.score} to ${p2score}.`,
-    `To make your move, click this link, or copy it into your navigation bar!`,
-    `${url}`,
-    `Happy word-making!`,
-    `~${closing}`]
-    
-    document.getElementById("emailText").innerHTML = `<p>${emailText.join('</p><p>')}</p>`
-    encodedurl = url.replaceAll("/", "%2F").replaceAll(":", "%3A")
-    // alert(emailText.splice(1, 3, url).join("%0A").replaceAll(" ", "%20"))
-    var subject = `I\%20played\%20${SE.word}\%20for\%20${SE.score}\%20points`
-    var body = emailText.join("%0A%0A").replaceAll(" ", "%20")
-    document.getElementById("sendEmail").href = `mailto:?subject=${subject}&body=${body}`
-    
-    // hide scoreboard
-    // show confirmation
-    // add score to confirmation
-    // add point value to confirmation
-    // add encrypt and decrypt functions
-    
-    
-  }
-    
-  document.getElementById("keyboard").addEventListener("click", function(event) {
-    let t = currTileIndex
-    if (t < 0) { return; }
-    if (hand[t].letter == hand[t].letter.toLowerCase()) {
-      let xy = getMousePos(document.getElementById("keyboard"), event);
-      let row = Math.floor(xy.x / kWid);
-      let col = Math.floor(xy.y / kHite);
-      let i = row + 9 * col;
-      hand[t].letter = "abcdefghijklmnopqrstuvwxyz_"[i];
-      if (hand[t].isOnBoard) { hand[t].placeTile(ctx, hand[t].oldCell); }
-      else { hand[t].placeTile(rackctx, -1);}  
-    }
-    reviseScore()
-    showKeyboard()
-  });
-   
-  document.getElementById("rack").addEventListener("click", function(event) {
-    hideKeyboard()
-    // get the coordinates of the click
-    let xy = getMousePos(rack, event);
-    let x = xy.x;
-    let y = xy.y;
-    let pos = Math.floor((x - 4) / (tWid + 2));
-    if (pos < 0) {pos = 0;}
-    if (pos >= hand.length) {pos = hand.length - 1}
-    if (hand[pos].isOnBoard) { // return the tile to the rack
-      if (currTileIndex > -1){
-        let t = currTileIndex;
+      var clickOnTile;
+      const letters = [];
+      const cells = [];
+      
+      function shuffleTiles(ctx) {
+        hideKeyboard()
         currTileIndex = -1;
-        hand[t].isOnBoard = false;
-        let redrawCell = hand[t].oldCell;
-        if (redrawCell > -1) {
-          addCell(ctx, decryptBonus(bonuses[redrawCell]), redrawCell);
-          hand[t].placeTile(rackctx, -1)
+        rackctx.fillStyle = shadow;
+        rackctx.fillRect(0, 0, 300, 50)
+        rackctx.fillStyle = gold;
+        let N = hand.length;
+        const numbers = Array.from(Array(N).keys());
+        let newPos = sample(numbers, N)[1];
+        for (let i = 0; i < N; i++) {
+          hand[i].i = newPos[i];
+          hand[i].placeTile(ctx, -1);
         }
-        hand[t].oldCell = -1;
-      }
-      for (let i = 0; i < hand.length; i++) {
-        hand[i].placeTile(rackctx, -1)
-      }
-    }
-    else if ( currTileIndex != pos ) { currTileIndex = pos; }
-    else { currTileIndex = -1; }
-    //for (let i = 0; i < hand.length; i++) {
-   //   hand[i].placeTile(rackctx, -1)
-   // }
-    if (currTileIndex > -1) {
-      if (hand[currTileIndex].letter == hand[currTileIndex].letter.toLowerCase()) {
-        showKeyboard();
-      }
-    }
-    for (let i = 0; i < hand.length; i++) {
-      hand[i].placeTile(rackctx, -1);
-      if (hand[i].oldCell > -1) { hand[i].placeTile(ctx, hand[i].oldCell);}
-    }
-    reviseScore()    
-  });
-  
-  document.getElementById("board").addEventListener("click", function(event) {
-    hideKeyboard();
-    // get the coordinates of the click
-    let xy = getMousePos(board, event);
-    let row = Math.floor(xy.x / tWid);
-    let col = Math.floor(xy.y / tHite);
-    var cell = row + 15 * col;
-
-    // ignore clicks on existing tiles
-    if (tiles[cell] != '-') { return; }
-    
-    var clickedOnTile = false;
-    
-    // check if we clicked on a tile; toggle selection if so
-    for (let i = 0; i < hand.length; i++) {
-      if (cell == hand[i].oldCell) {
-        clickedOnTile = true;
-        if (currTileIndex == i) {currTileIndex = -1;}
-        else {currTileIndex = i;}
-        hand[i].placeTile(ctx, cell)
-      }
-    }
-
-    // if we did click on a tile, turn off selection on other tiles
-    if (!clickedOnTile) { // otherwise, move the selected tile to the board and deselect it
-      let t = currTileIndex;
-      currTileIndex = -1;
-      if (t > -1) {
-        hand[t].isOnBoard = true;
-        redrawCell = hand[t].oldCell;
-        if (redrawCell > -1) {
-          addCell(ctx, decryptBonus(bonuses[redrawCell]), redrawCell);
+        hand.sort( compareTile );
+      } 
+    //  document.getElementById("shuffle").addEventListener("click", alert("clicked shuffle"));
+       
+      function showKeyboard() {
+        let k = document.getElementById("keyboard");
+        k.removeAttribute("hidden");
+        const kctx = k.getContext("2d");
+        drawKeyboard(kctx);
+      } 
+      
+      function hideKeyboard() {
+        let k = document.getElementById("keyboard")
+        k.setAttribute("hidden", false)
+      } 
+      
+      function toggleInstructions() {
+        let ds = document.getElementById("instructions")
+        if (ds.hasAttribute("hidden")) {
+          ds.removeAttribute("hidden");
         }
-        hand[t].placeTile(ctx, cell)
-        hand[t].placeTile(rackctx, -1)
-        hand[t].oldCell = cell;
+        else {
+          ds.setAttribute("hidden", false)
+        }
       }
-    }
-    for (let i = 0; i < hand.length; i++) {
-      hand[i].placeTile(rackctx, -1);
-      if (hand[i].oldCell > -1) { hand[i].placeTile(ctx, hand[i].oldCell);}
-    }
-    if (currTileIndex > -1) {
-      if (hand[currTileIndex].letter == hand[currTileIndex].letter.toLowerCase()) {
-        showKeyboard();
+      
+      function toggleLetterCount() {
+        let tc = document.getElementById("tilecounter")
+        if (tc.hasAttribute("hidden")) {
+          tc.removeAttribute("hidden");
+        }
+        else {
+          tc.setAttribute("hidden", false)
+        }
+      }  
+      function reviseScore() {
+          letters.length = 0;
+          cells.length = 0;
+          for (let i = 0; i < lhand; i++) {
+            if (hand[i].oldCell > -1) {
+              letters.push(hand[i].letter);
+              cells.push(hand[i].oldCell);
+            }
+          }
+          SE = score(letters, cells);
+          let b = document.getElementById("play")
+          if (SE.score > -1) {
+            b.classList.remove("w3-light-gray")
+            b.classList.add("w3-green")
+            let text = ("✅ Play for " + SE.score + " points!")
+            let bContent = document.createTextNode(text)
+            b.removeChild(b.firstChild)
+            b.appendChild(bContent)
+          }
+          else {
+            b.classList.remove("w3-green")
+            b.classList.add("w3-light-gray")
+            let text = ("☑️ Play for -- points")
+            let bContent = document.createTextNode(text)
+            b.removeChild(b.firstChild)
+            b.appendChild(bContent)
+          }
       }
-    }
-    reviseScore()
-  }, false);
-  
-  
-
-
-  
+      
+      function clearTiles() {
+        for (let i = 0; i < lhand; i++) {
+          if (hand[i].isOnBoard) {
+            hand[i].isOnBoard = false;
+            let c = hand[i].oldCell;
+            addCell(ctx, decryptBonus(bonuses[c]), c);
+            hand[i].placeTile(rackctx, -1);
+            hand[i].oldCell = -1;
+          }
+        }
+        reviseScore()
+      }
+      
+      function swapTiles() {
+        alert("Sorry, this button isn't working yet!!\n\nLet Bennett know you want to swap tiles and we'll figure something out.")
+        return false;
+      }
+      
+      function newMove(msg, dif, salut, close) {
+        status = ["losing", "tied", "winning"][(dif > 0) + (dif >= 0)]; //boolean arithmetic kludge
+        
+        // played tiles to board; unplayed tiles to new hand
+        const newHand = []
+        for (let i = 0; i < lhand; i++) {
+          if (hand[i].isOnBoard) {
+             tiles[hand[i].oldCell] = hand[i].letter;
+          }
+          else if (hand[i].letter != hand[i].letter.toLowerCase()) {
+            newHand.push(hand[i].letter);
+            }
+          else {newHand.push('_');}
+        }  
+        
+        // draw new tiles
+        drawResult = sample(pot, Math.min(pot.length, 7 - newHand.length))
+        newTiles = drawResult[1]
+        pot = drawResult[0]
+        newHand.push(...newTiles)    
+        
+        //var subject = `I\%20played\%20${SE.word}\%20for\%20${SE.score}\%20points`;
+        var congrats = `${msg}`
+        var newScore = `You drew: ${newTiles}, so your hand is now: ${newHand}. You are ${status}, ${p1score + SE.score} to ${p2score}.`
+    
+        seedList = []
+        seedList.push(encrypt(p2hand), encrypt(newHand), p2score, (p1score + SE.score), encodeTiles(tiles))
+        newSeed = seedList.join("-");
+        if (p1name != null) {var name1 = "&p1=" + p2name;}
+        else {var name1 = ""}
+        if (p2name != null) {var name2 = "&p2=" + p1name;}
+        else {var name2 = ""}
+        url = "https://bennettmcintosh.com/words?seed=" + newSeed + name1 + name2
+    
+        var emailText = [`${salut}`,
+        `I’ve made my move in our Words game — I played ${SE.word} for ${SE.score} points, so I am now ${status}, ${p1score + SE.score} to ${p2score}.`,
+        `To make your move, click this link, or copy it into your navigation bar!`,
+        `${url}`,
+        `Happy word-making!`,
+        `~${close}`] 
+        return {emailText, newScore};
+    
+      }
+      
+      function gameOver(msg, dif, salut, close) {
+        let delta = 0;
+        for (let i = 0; i < p2hand.length; i++) {
+          delta += getValue(p2hand[i]);
+        }
+        dif += 2 * delta;
+        p1score += (SE.score + delta);
+        p2score -= delta;
+      
+        status = ["LOST", "TIED", "WON"][(dif > 0) + (dif >= 0)];
+        
+        const newHand = [];
+        
+        for (let i = 0; i < lhand; i++) {
+          tiles[hand[i].oldCell] = hand[i].letter;
+        }
+        
+        var congrats = `${msg}`
+        var newScore = `GAME OVER: You have ${status}, ${p1score} to ${p2score}!`
+       // var instruct = "Please click on this button to generate an email for you to send to your opponent so they can view the results and/or start a new game."
+        
+        seedList = []
+        seedList.push(encrypt(p2hand), encrypt(newHand), p2score, p1score, encodeTiles(tiles))
+        newSeed = seedList.join("-");
+        if (p1name != null) {var name1 = "&p1=" + p2name;}
+        else {var name1 = ""}
+        if (p2name != null) {var name2 = "&p2=" + p1name;}
+        else {var name2 = ""}
+        url = "https://bennettmcintosh.com/words?seed=" + newSeed + name1 + name2 + "&go=1"
+            
+        var emailText = [`${salut}`,
+        `I’ve made my move in our Words game — I played ${SE.word} for ${SE.score} points, and ${status}, ${p1score + SE.score} to ${p2score}.`,
+        `You can view the results at the link below:`,
+        `${url}`,
+        `Or you can start a new game at https://bennettmcintosh.com/words`,
+        `Happy word-making!`,
+        `~${close}`]   
+        return {emailText, newScore};
+      }
+      
+      function submitPlay() {
+        if (!(SE.score > -1)) {
+          alert("Sorry, this isn't a valid move.\n" + SE.error);
+          return;
+        }
+        
+        var playMsg = `Congratulations — you played ${SE.word} for ${SE.score} points!`;
+        var subject = `I\%20played\%20${SE.word}\%20for\%20${SE.score}\%20points`;
+        var dif = p1score + SE.score - p2score;
+    
+        if (p2name == null) {var salut = "Hi,"}
+        else { var salut = `Hi ${p2name},`}
+        if (p1name == null) {var close = ""}
+        else {var close = `${p1name}`;}
+        if (pot.length == 0 && letters.length == p1hand.length) { 
+          OM = gameOver(playMsg, dif, salut, close);
+          subject = "Game Over: " + subject
+        }
+        else { 
+          OM = newMove(playMsg, dif, salut, close); 
+          p1score += SE.score
+        }
+    
+        
+        // alert("you drew " + newTiles + "\n\n" + url)
+        
+        var instruct = "Please click on this button to generate an email to your opponent alerting them of what happened and what to do next."
+    
+        
+        let conf = document.getElementById("confirmation");
+        conf.removeAttribute("hidden");
+        let sb = document.getElementById("scoreboard");
+        sb.setAttribute("hidden", false); 
+        
+        // congrats = "Congratulations – you played " + SE.word + " for " + SE.score + " points!\n" + 
+        //           "You drew: " + newTiles + " so your hand is now: " + newHand + ".";
+        
+        document.getElementById("congrats").innerHTML = playMsg;
+        
+        if (p2name != null) {
+          document.getElementById("newScoreP").innerHTML = OM.newScore.replace("your opponent", p2name)
+          document.getElementById("emailInstruct").innerHTML = instruct.replace("your opponent", p2name)
+        }
+        else {
+          document.getElementById("newScoreP").innerHTML = OM.newScore
+          document.getElementById("emailInstruct").innerHTML = instruct
+        }
+    
+        
+        document.getElementById("emailText").innerHTML = `<p>${OM.emailText.join('</p><p>')}</p>`
+        encodedurl = url.replaceAll("/", "%2F").replaceAll(":", "%3A")
+        // alert(emailText.splice(1, 3, url).join("%0A").replaceAll(" ", "%20"))
+        var body = OM.emailText.join("%0A%0A").replaceAll(" ", "%20")
+        document.getElementById("sendEmail").href = `mailto:?subject=${subject}&body=${body}`
+        
+        // hide scoreboard
+        // show confirmation
+        // add score to confirmation
+        // add point value to confirmation
+        // add encrypt and decrypt functions
+        
+        
+      }
+        
+      document.getElementById("keyboard").addEventListener("click", function(event) {
+        let t = currTileIndex
+        if (t < 0) { return; }
+        if (hand[t].letter == hand[t].letter.toLowerCase()) {
+          let xy = getMousePos(document.getElementById("keyboard"), event);
+          let row = Math.floor(xy.x / kWid);
+          let col = Math.floor(xy.y / kHite);
+          let i = row + 9 * col;
+          hand[t].letter = "abcdefghijklmnopqrstuvwxyz_"[i];
+          if (hand[t].isOnBoard) { hand[t].placeTile(ctx, hand[t].oldCell); }
+          else { hand[t].placeTile(rackctx, -1);}  
+        }
+        reviseScore()
+        showKeyboard()
+      });
+       
+      document.getElementById("rack").addEventListener("click", function(event) {
+        hideKeyboard()
+        // get the coordinates of the click
+        let xy = getMousePos(rack, event);
+        let x = xy.x;
+        let y = xy.y;
+        let pos = Math.floor((x - 4) / (tWid + 2));
+        if (pos < 0) {pos = 0;}
+        if (pos >= hand.length) {pos = hand.length - 1}
+        if (hand[pos].isOnBoard) { // return the tile to the rack
+          if (currTileIndex > -1){
+            let t = currTileIndex;
+            currTileIndex = -1;
+            hand[t].isOnBoard = false;
+            let redrawCell = hand[t].oldCell;
+            if (redrawCell > -1) {
+              addCell(ctx, decryptBonus(bonuses[redrawCell]), redrawCell);
+              hand[t].placeTile(rackctx, -1)
+            }
+            hand[t].oldCell = -1;
+          }
+          for (let i = 0; i < hand.length; i++) {
+            hand[i].placeTile(rackctx, -1)
+          }
+        }
+        else if ( currTileIndex != pos ) { currTileIndex = pos; }
+        else { currTileIndex = -1; }
+        //for (let i = 0; i < hand.length; i++) {
+       //   hand[i].placeTile(rackctx, -1)
+       // }
+        if (currTileIndex > -1) {
+          if (hand[currTileIndex].letter == hand[currTileIndex].letter.toLowerCase()) {
+            showKeyboard();
+          }
+        }
+        for (let i = 0; i < hand.length; i++) {
+          hand[i].placeTile(rackctx, -1);
+          if (hand[i].oldCell > -1) { hand[i].placeTile(ctx, hand[i].oldCell);}
+        }
+        reviseScore()    
+      });
+      
+      document.getElementById("board").addEventListener("click", function(event) {
+        hideKeyboard();
+        // get the coordinates of the click
+        let xy = getMousePos(board, event);
+        let row = Math.floor(xy.x / tWid);
+        let col = Math.floor(xy.y / tHite);
+        var cell = row + 15 * col;
+    
+        // ignore clicks on existing tiles
+        if (tiles[cell] != '-') { return; }
+        
+        var clickedOnTile = false;
+        
+        // check if we clicked on a tile; toggle selection if so
+        for (let i = 0; i < hand.length; i++) {
+          if (cell == hand[i].oldCell) {
+            clickedOnTile = true;
+            if (currTileIndex == i) {currTileIndex = -1;}
+            else {currTileIndex = i;}
+            hand[i].placeTile(ctx, cell)
+          }
+        }
+    
+        // if we did click on a tile, turn off selection on other tiles
+        if (!clickedOnTile) { // otherwise, move the selected tile to the board and deselect it
+          let t = currTileIndex;
+          currTileIndex = -1;
+          if (t > -1) {
+            hand[t].isOnBoard = true;
+            redrawCell = hand[t].oldCell;
+            if (redrawCell > -1) {
+              addCell(ctx, decryptBonus(bonuses[redrawCell]), redrawCell);
+            }
+            hand[t].placeTile(ctx, cell)
+            hand[t].placeTile(rackctx, -1)
+            hand[t].oldCell = cell;
+          }
+        }
+        for (let i = 0; i < hand.length; i++) {
+          hand[i].placeTile(rackctx, -1);
+          if (hand[i].oldCell > -1) { hand[i].placeTile(ctx, hand[i].oldCell);}
+        }
+        if (currTileIndex > -1) {
+          if (hand[currTileIndex].letter == hand[currTileIndex].letter.toLowerCase()) {
+            showKeyboard();
+          }
+        }
+        reviseScore()
+      }, false);
+}
+    
+    
+      

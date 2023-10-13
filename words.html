@@ -54,15 +54,18 @@
         <canvas hidden width="315px" height="105px" id="keyboard" style="padding:0">
           This game may not be accessible with older web browsers like Internet Explorer or when using assistive technology like screen readers. If you are seeing this while using assistive technology, I'm sorry. If you are not using assistive technology, please update your browser to play. 
         </canvas>
-      <div class="w3-row w3-center">
+      <div hidden id='newGame' class="w3-row w3-center">
+        <a href="https://bennettmcintosh.com/words" style="margin:10px;width:155px" class="w3-center w3-hover-pale-blue w3-button w3-light-blue">New Game</a>
+      </div>
+      <div id='b1' class="w3-row w3-center">
         <a onclick="clearTiles(rackctx)" href="#" id="clear" style="margin:10px;width:155px" class="w3-center w3-hover-pale-blue w3-button w3-light-blue">↪️ Reset Rack</a>
         <a onclick="shuffleTiles(rackctx)" href="#" id="shuffle" style="margin:10px;width:185px" class="w3-center w3-hover-pale-blue w3-button w3-light-blue">🔀 Shuffle Rack</a>
       </div>
-      <div class="w3-row w3-center">
+      <div id='b2' class="w3-row w3-center">
         <a onclick="swapTiles()" href="#" id="swap" style="margin:10px;width:155px;text-decoration:none!important;" class="w3-center w3-hover-light-gray w3-button w3-light-gray">🆎 Discard / Pass</a>
         <a onclick="submitPlay()" href="#" id="play" style="margin:10px;width:185px;text-decoration:none!important;" class="w3-center w3-hover-light-gray w3-button w3-light-gray">☑️ Play for -- points</a>
       </div>
-      <div class="w3-row w3-center">
+      <div id='b3' class="w3-row w3-center">
         <p><a href="#" onclick="window.open('https://scrabble.merriam.com/', 'popup', 'location=0,width=400,height=300,left=500,top=55'); return false;">Search in the Scrabble Dictionary</a></p>
         <p><a href="#" onclick="toggleLetterCount()">Show/hide letter frequency</a></p>
         <table hidden id="tilecounter">
@@ -132,7 +135,7 @@
     
     <div hidden id="confirmation" class="w3-col l4 w3-white w3-container w3-center" style="margin-top:30px;margin-left:50px;max-width:600px;box-shadow:5px 5px #ccccaa;word-wrap:break-word"> 
       <p id="congrats">Congratulations! You played <node id="playedWord">__</node> for <node id="scoredPoints">###</node> points!</p>
-      <p id="newScore">The score is now #1 (you) to #2 (your opponent)</node>.</p>
+      <p id="newScoreP">The score is now #1 (you) to #2 (your opponent)</node>.</p>
       <p id="emailInstruct">Please click on this button to send an email to your opponent so they can make their move:</p>
       <a href="" id="sendEmail" target="_blank" style="margin:10px;width:185px" class="w3-center w3-hover-pale-blue w3-button w3-light-blue">✉️ Send Email</a>
       <p>If that button doesn't work, you can copy and paste the text below:</p>
