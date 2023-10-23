@@ -898,7 +898,7 @@
         url = "https://bennettmcintosh.com/words?seed=" + newSeed + name1 + name2 + "&go=1"
             
         var emailText = [`${salut}`,
-        `I’ve made my move in our Words game — I played ${SE.word} for ${SE.score} points, and ${status}, ${p1score + SE.score} to ${p2score}.`,
+        `I’ve made my move in our Words game — I played ${SE.word} for ${SE.score} points, and ${status}, ${p1score} to ${p2score}.`,
         `You can view the results at the link below:`,
         `${url}`,
         `Or you can start a new game at https://bennettmcintosh.com/words`,
