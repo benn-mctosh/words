@@ -1,16 +1,16 @@
 # Words
-A game I made so I could play the word-building games my grandma loves while protecting my privacy (apps like Words With Friends are embarassingly bloated, and I don't have a smartphone anyway)
+A game I made so I could play the word-building games my grandma loves while protecting my privacy (apps like Words With Friends are embarrassingly bloated, and I don't have a smartphone anyway)
 
 <img width="700" alt="Screenshot 2023-08-08 at 08 26 42" src="https://github.com/benn-mctosh/words/assets/107890667/196e686a-c54e-4276-936f-adfc3a7f43e3">
 
 ## What is this? 
 A privacy-preserving crossword game. **This game protects your data through the simple expedient of not collecting any data.**
 
-Everything is performed client-side. Think about it as a game in the tradition of chess-by-correspondence: you make a move, then send the game state to your opponent, who makes their move... Even dictionary lookups are performed client-side (This makes for a larger-than-ideal web page, since you're downloading the entire dictionary. Maybe there's some sort of client-side caching that can address this, but that's not part of the minimum viable product. You could also just download `loadDict.js` for yourself and run the game offline if you want.)
+Everything is performed client-side. Think about it as a game in the tradition of chess-by-correspondence: you make a move, then send the game state to your opponent, who makes their move... Even dictionary lookups are performed client-side (This makes for a larger-than-ideal web page, since you're downloading the entire dictionary every time you refresh it. Maybe there's some sort of client-side caching that can address this, but that's not part of the minimum viable product. You could also just download `loadDict.js` for yourself and run the game offline if you want.)
 
 The stable version of this game lives on my website, at [`https://bennettmcintosh.com/words`](https://bennettmcintosh.com/words).
 
-I can’t provide any privacy guarantees, though, becuase my website is hosted by GitHub, and I haven’t bothered to figure out what sort of analytics they collect. So if it’s really important to you that MSFT not have your Scrabble moves (to train ScrabbleGPT? That train has probably left the station) I suggest, even encourage you, to download the javascript source yourself. 
+I can’t provide any privacy guarantees, though, because my website is hosted by GitHub, and I haven’t bothered to figure out what sort of analytics they collect from the URL parameters that store the game state. So if it’s really important to you that MSFT not have your crossword game moves (to train ScrabbleGPT? That seems not worth it) I suggest, even encourage you, to download the javascript source yourself and run it offline. 
 
 ## Starting a new game
 Navigating to the landing page (in this case, [`https://bennettmcintosh.com/words`](https://bennettmcintosh.com/words), with no URL parameters) produces an empty game board and automatically draws seven tiles for you. Build words by clicking on a tile to select it, then click on the board to place it where you click, or on the rack to remove it from the board. If you have made a legal move, the `Play` button will turn green and display the number of points this play would earn you. 
@@ -20,7 +20,7 @@ If you're not sure why a move isn’t valid, clicking on the `Play` button while
 ## Enlisting/informing an opponent
 
 Once you click the `Play` button, the game automatically generates:
-* A URL that includes the `seed` parameter, which your opponent can visit to view/play the game from their perspective
+* A URL that includes the `seed` parameter. The seed parameter encodes the game state, so your opponent can visit this URL to view/play the game from their perspective
 * The text of an email or message you can send to your opponent with that URL (so that you can use communications protocol of your choice)
 * A `mailto` link (with blank recipient field) that you can click to generate such an email. Simply input your opponent’s email address.
 
@@ -41,16 +41,16 @@ The first word must be placed on the blue sunflower square in the center. Future
 
 ### Colored cells
 
-For the first move in which a tile is placed on these cells, these multiply the value of the letter placed on them (purple & pink cells) or any word that includes them (blue and green cells) by the number shown in the cell. 
+For the first move in which a tile is placed on these cells, these multiply the value of the letter placed on them (purple & pink cells) or any word that includes them (blue and green cells, including the central blue cell) by the number shown in the cell. 
 
 ## Known issues/future features
 
-* The game interprets `p1` and `p2` parameters in the URL as player one and player two’s names, but those aren’t currently added to the URL that gets sent to your oppnent.
-* Recent sortening to the `seed` parameter means there's no opportunity for a linebreak, so the email displayed at the end breaks the CSS formatting. 
+* The game interprets `p1` and `p2` parameters in the URL as player one and player two’s names, but those aren’t currently added to the URL that gets sent to your opponent.
+* Recent shortening to the `seed` parameter means there's no opportunity for a line break, so the email displayed at the end breaks the CSS formatting. 
 * The `discard/swap` button has not yet been implemented.
 * There’s debate among players (even within my own family) whether it’s more fun for a game to tell you in real-time whether the word you’re considering is legal, or to make you wait until pressing the `Play` button. As currently implemented, this game tells you in real time (because that’s how Grandma likes it!), but I might add an option to toggle that later. 
 
-Also of note: I provide a link to the *Official SCRABBLE® Players' Dictionary* (*OSPD*), because that provides a useful search tool for prefixes/suffixes, etc., but this game doesn't use *OSPD*. So the game may reject a play that would be valid per *OSPD* or vice versa. 
+Also of note: I provide a link to the *Official SCRABBLE® Players' Dictionary* (*OSPD*), because that provides a useful search tool for prefixes/suffixes, etc., but this game doesn't use *OSPD*. So the game may reject a play that would be valid per *OSPD*, or vice versa. 
 
 
 

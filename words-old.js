@@ -802,9 +802,13 @@
       y.setAttribute("for", "i".concat(i));
       y.setAttribute("style", "margin-right:10px")
       z = document.createTextNode(" ".concat(hand[i].letter))
-      y.appendChild(z)
-      checklist.appendChild(y)
+      y.appendChild(z);
+      checklist.appendChild(y);
     }     
+    
+
+    }
+    
     return false;
     // prevent discard if more tiles are checked than remain in pot
   }

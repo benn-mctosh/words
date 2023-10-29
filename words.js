@@ -1,5 +1,5 @@
   // add options to pass 
-  // if pot and p2hand are empty, show new game text
+  // if pot and p2hand are empty, show new game interface
   
   let params = new URLSearchParams(location.search);
   var seed = params.get('seed')
@@ -229,7 +229,10 @@
   
   function score(letters, cells) {
     if (firstMove && !cells.includes(112)) {
-      return {score: NaN, error: "The first move of the game must include the center tile"}
+      return {score: NaN, error: "The first move of the game must include the center tile"};
+    }
+    if (letters.length == 0) {
+      return {score: NaN, error: "Please play at least one tile.\nClick on a tile to select it, then on the board to place it."};
     }
     let score = 0;
     const factors = [1];
@@ -355,7 +358,7 @@
           factors.push(1)
           addends.push(0)
         }
-        // // alert(stem[i])
+        // // alert(stem[i]) 
         // // alert(cell)
         let branch = findBranch(stem[i], cell, "h")
         // branches.push(branch)
@@ -621,7 +624,7 @@
   const tiles = decodeTiles(args[2])
   
   // set up the pot
-  var pot = ("JQZX" + "KFWYCV".repeat(2) + "BMFP".repeat(3) + "TRSD_".repeat(4) +
+  var pot = ("JQZX" + "KFWYCV".repeat(2) + "BMFP_".repeat(3) + "TRSD".repeat(4) +
      "NLHG".repeat(5) + "U".repeat(6) + "AIO".repeat(9) + "E".repeat(14)).split("");
   
   if (seed == "qqqqqq-qqqqqq-0-0-225") {
@@ -731,7 +734,7 @@
   }
   
   if (GO == false) {
-      var SE = {score: 0, error: "Please play at least one tile.\nClick on a tile to select it, then on the board to place it."};
+      var SE = {score: NaN, error: "Please play at least one tile.\nClick on a tile to select it, then on the board to place it."};
       // var SE = score("LAY", [94, 95, 96])
     
       var clickOnTile;
@@ -790,6 +793,8 @@
           if (SE.score > -1) {
             b.classList.remove("w3-light-gray")
             b.classList.add("w3-green")
+            b.classList.remove("w3-hover-light-gray")
+            b.classList.add("w3-hover-light-green")
             let text = ("✅ Play for " + SE.score + " points!")
             let bContent = document.createTextNode(text)
             b.removeChild(b.firstChild)
@@ -798,6 +803,8 @@
           else {
             b.classList.remove("w3-green")
             b.classList.add("w3-light-gray")
+            b.classList.add("w3-hover-light-gray")
+            b.classList.remove("w3-hover-light-green")
             let text = ("☑️ Play for -- points")
             let bContent = document.createTextNode(text)
             b.removeChild(b.firstChild)
@@ -819,10 +826,73 @@
       }
       
       function swapTiles() {
+        clearTiles(rackctx);
         alert("Sorry, this button isn't working yet!!\n\nLet Bennett know you want to swap tiles and we'll figure something out.")
-        return false;
+        
+        let swpr = document.getElementById("tileSwapper");
+        swpr.removeAttribute("hidden");
+        let sb = document.getElementById("scoreboard");
+        sb.setAttribute("hidden", false); 
+        let checklist = document.getElementById("checklist");
+        for (let i = 0; i < hand.length; i++) {
+          let x = document.createElement("INPUT")
+          x.setAttribute("type", "checkbox");
+          x.setAttribute("id", "i".concat(i));
+          x.setAttribute("name", hand[i].letter.concat(i));
+          x.setAttribute("style", "margin-left:10px");
+          x.checked = false;
+          checklist.appendChild(x)
+          let y = document.createElement("label")
+          y.setAttribute("for", "i".concat(i));
+          y.setAttribute("style", "margin-right:10px")
+          z = document.createTextNode(" ".concat(hand[i].letter))
+          y.appendChild(z)
+          checklist.appendChild(y)
+        }  
+        if (hand.length > pot.length) {
+          let note = document.getElementById("checklistNote");
+          var noteText = document.createTextNode(`There are only ${pot.length} tiles remaining in the pot, so if you select more than ${pot.length} tiles, you will draw back some of the tiles you discarded.`);
+          note.appendChild(noteText);
+          
+
+        }x
+      return false;
+    }
+    
+    function submitDiscard() {
+      dcardIndices = [];
+      for (let i = 0; i < hand.length; i++) {
+        let box = document.getElementById(`i${i}`);
+        if (box.checked) {
+          dcardIndices.push(i);
+        }
       }
-      
+      discardCount = dcardIndices.length;
+        // get the tiles checked
+      SE = {score: 0, word: "", passed: true};
+      while (dcardIndices.length > pot.length) {
+          let l = hand.splice(dcardIndices.pop(),1)
+          pot.push(l[0].letter);
+          SE.word += l[0].letter; 
+      }
+      drawResult = sample(pot, discardCount)
+      newTiles = drawResult[1]
+      for (let i = 0; i < newTiles.length; i++) {
+          hand.push(new handTile(newTiles[i]));
+      }
+      pot = drawResult[0]
+      while (dcardIndices.length > 0) {
+          let l = hand.splice(dcardIndices.pop(),1)
+          pot.push(l[0].letter);
+          SE.word += l[0].letter; 
+      }
+      p1hand.push(...newTiles);
+      alert(p1hand);
+      let ts = document.getElementById("tileSwapper");
+      ts.setAttribute("hidden", false); 
+      submitPlay();
+      return false;
+    }       
       function newMove(msg, dif, salut, close) {
         status = ["losing", "tied", "winning"][(dif > 0) + (dif >= 0)]; //boolean arithmetic kludge
         
@@ -842,7 +912,11 @@
         drawResult = sample(pot, Math.min(pot.length, 7 - newHand.length))
         newTiles = drawResult[1]
         pot = drawResult[0]
-        newHand.push(...newTiles)    
+        newHand.push(...newTiles)
+        
+        for (i = newHand.length - 1; SE.passed && newTiles.length < SE.word.length; i--) {
+          newTiles.push(newHand[i]);
+        }  
         
         //var subject = `I\%20played\%20${SE.word}\%20for\%20${SE.score}\%20points`;
         var congrats = `${msg}`
@@ -912,9 +986,15 @@
           alert("Sorry, this isn't a valid move.\n" + SE.error);
           return;
         }
-        
-        var playMsg = `Congratulations — you played ${SE.word} for ${SE.score} points!`;
-        var subject = `I\%20played\%20${SE.word}\%20for\%20${SE.score}\%20points`;
+        if (!SE.passed) {
+          var playMsg = `Congratulations — you played ${SE.word} for ${SE.score} points!`;
+          var subject = `I\%20played\%20${SE.word}\%20for\%20${SE.score}\%20points`;
+        }
+        else {
+          var playMsg = `Congratulations — you passed, swapping the following tiles: ${SE.word.split("").join(",")} !`;
+          var subject = `I\%20passed\%20my\%20turn`;
+        }
+
         var dif = p1score + SE.score - p2score;
     
         if (p2name == null) {var salut = "Hi,"}
@@ -927,7 +1007,10 @@
         }
         else { 
           OM = newMove(playMsg, dif, salut, close); 
-          p1score += SE.score
+          p1score += SE.score;
+          if (SE.passed) {
+          OM.emailText[1] = `I’ve made my move in our Words game — I passed and swapped out ${SE.word.length} tiles. I am ${status}, ${p1score} to ${p2score}.`
+          }
         }
     
         
