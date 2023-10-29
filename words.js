@@ -826,9 +826,7 @@
       }
       
       function swapTiles() {
-        clearTiles(rackctx);
-        alert("Sorry, this button isn't working yet!!\n\nLet Bennett know you want to swap tiles and we'll figure something out.")
-        
+        clearTiles(rackctx);        
         let swpr = document.getElementById("tileSwapper");
         swpr.removeAttribute("hidden");
         let sb = document.getElementById("scoreboard");
