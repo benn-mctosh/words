@@ -10,7 +10,7 @@ Everything is performed client-side. Think about it as a game in the tradition o
 
 The stable version of this game lives on my website, at [`https://bennettmcintosh.com/words`](https://bennettmcintosh.com/words).
 
-I can’t provide any privacy guarantees, though, because my website is hosted by GitHub, and I haven’t bothered to figure out what sort of analytics they collect from the URL parameters that store the game state. So if it’s really important to you that MSFT not have your crossword game moves (to train ScrabbleGPT? That seems not worth it) I suggest, even encourage you, to download the javascript source yourself and run it offline. 
+Of course, this game is hosted on GitHub aka MSFT, which logs your IP when you visit. So if your threat model includes “Microsoft knows that I’m playing a word-building game” it’s not that privacy-preserving. Still a helluvalot better than the adware I’d have to wade through to play Words With Friends or whatever. 
 
 ## Starting a new game
 Navigating to the landing page (in this case, [`https://bennettmcintosh.com/words`](https://bennettmcintosh.com/words), with no URL parameters) produces an empty game board and automatically draws seven tiles for you. Build words by clicking on a tile to select it, then click on the board to place it where you click, or on the rack to remove it from the board. If you have made a legal move, the `Play` button will turn green and display the number of points this play would earn you. 
