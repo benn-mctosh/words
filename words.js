@@ -926,7 +926,7 @@
         else {var name1 = ""}
         if (p2name != null) {var name2 = "&p2=" + p1name;}
         else {var name2 = ""}
-        url = "https://bennettmcintosh.com/words?seed=" + newSeed + name1 + name2
+        url = "https://words.bennettmcintosh.com/?seed=" + newSeed + name1 + name2
     
         var emailText = [`${salut}`,
         `I’ve made my move in our Words game — I played ${SE.word} for ${SE.score} points, so I am now ${status}, ${p1score + SE.score} to ${p2score}.`,
