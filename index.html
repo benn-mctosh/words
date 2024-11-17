@@ -12,13 +12,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="icon" sizes="192x192" href="pics/favicosahedron.png">
-  <link rel="shortcut icon" href="pics/favicosahedron.png" type="image/png"/>
-  <link rel="apple-touch-icon" href="pics/favicosahedron.png" type="image/png"/>
+  <link rel="icon" sizes="192x192" href="favicosahedron.png">
+  <link rel="shortcut icon" href="favicosahedron.png" type="image/png"/>
+  <link rel="apple-touch-icon" href="favicosahedron.png" type="image/png"/>
   <link rel="stylesheet" href="styles/W3.css">
   <title>Words</title>
   <meta property="og:title" content="Words"/>
-  <meta property="og:description" content="Graduate student in the History of Science, Medicine, and Technology at UW-Madison"/>
+  <meta property="og:description" content="A word-building game"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="utf-8">
 </head>
@@ -26,8 +26,8 @@
 
   <!-- header -->
   <div class="w3-row w3-bar w3-light-blue w3-top">
-  <a href="index.html" class="w3-bar-item w3-button w3-hover-pale-blue w3-hide-small">Home</a>
-  <a href="words.html" class="w3-bar-item w3-button w3-hover-pale-blue">New Game</a>
+  <a href="https://bennettmcintosh.com" class="w3-bar-item w3-button w3-hover-pale-blue w3-hide-small">Home</a>
+  <a href="https://words.bennettmcintosh.com" class="w3-bar-item w3-button w3-hover-pale-blue">New Game</a>
   <a href="https://blog.bennettmcintosh.com" class="w3-bar-item w3-button w3-hover-pale-blue">Bennett’s Blog</a>
   <a href="https://github.com/benn-mctosh/words" class="w3-bar-item w3-button w3-hover-pale-blue">View on GitHub</a>
   </div>
@@ -48,14 +48,14 @@
       </div>
       <div id=rackRow class="w3-row w3-center"> 
         <canvas width="300px" height="50px" id="rack" style="padding:0">
-          This game may not be accessible with older web browsers like Internet Explorer or when using assistive technology like screen readers. If you are seeing this while using assistive technology, I'm sorry. If you are not using assistive technology, please update your browser to play. 
+
         </canvas>
       </div>
         <canvas hidden width="315px" height="105px" id="keyboard" style="padding:0">
           This game may not be accessible with older web browsers like Internet Explorer or when using assistive technology like screen readers. If you are seeing this while using assistive technology, I'm sorry. If you are not using assistive technology, please update your browser to play. 
         </canvas>
       <div hidden id='newGame' class="w3-row w3-center">
-        <a href="https://bennettmcintosh.com/words" style="margin:10px;width:155px" class="w3-center w3-hover-pale-blue w3-button w3-light-blue">New Game</a>
+        <a href="https://words.bennettmcintosh.com/" style="margin:10px;width:155px" class="w3-center w3-hover-pale-blue w3-button w3-light-blue">New Game</a>
       </div>
       <div id='b1' class="w3-row w3-center">
         <a onclick="clearTiles(rackctx)" href="#" id="clear" style="margin:10px;width:155px;" class="w3-center w3-hover-pale-blue w3-button w3-light-blue">↪️ Reset Rack</a>
