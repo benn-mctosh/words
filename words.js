@@ -66,20 +66,41 @@
   **********************/
   
   function copyText() {
-  console.log("copying")
-  // Get the text field
-  var copyText = document.getElementById("emailText");
+      console.log("copying")
+      // Get the text field
+      var copyText = document.getElementById("emailText");
+      var btn = document.getElementById("copy");
+    
+      // Select the text field
+      // copyText.select();
+      // copyText.setSelectionRange(0, 99999); // For mobile devices
+    
+       // Copy the text inside the text field
+      navigator.clipboard.writeText(document.getElementById("emailText").innerText);
+      btn.innerHTML = "✅ Copy to clipboard";
+      btn.classList.remove("w3-hover-pale-blue");
+      btn.classList.add("w3-hover-green");
+      btn.addEventListener("mouseout", function(){ resetCopy(); })
+      document.getElementById("emailText").classList.remove("w3-light-gray")
+      document.getElementById("emailText").classList.add("w3-light-green")
 
-  // Select the text field
-  // copyText.select();
-  // copyText.setSelectionRange(0, 99999); // For mobile devices
+    
+      // Alert the copied text
+      // alert("Copied the text: " + document.getElementById("emailText").innerText);
+  }
+  
+  function resetCopy() {
+    console.log("resetting")
+    var btn = document.getElementById("copy");
+    btn.classList.remove("w3-hover-green");
+    btn.classList.add("w3-hover-pale-blue");
+    btn.innerHTML = "⧉ Copy to clipboard";
+    btn.removeEventListener("mouseout", function(){ resetCopy(); })
+    document.getElementById("emailText").classList.add("w3-light-gray")
+    document.getElementById("emailText").classList.remove("w3-light-green")
 
-   // Copy the text inside the text field
-  navigator.clipboard.writeText(document.getElementById("emailText").innerText);
 
-  // Alert the copied text
-  // alert("Copied the text: " + document.getElementById("emailText").innerText);
-}
+  }
   
   // ok, we need to write our own sample function?
   function sample(arr, N) {
