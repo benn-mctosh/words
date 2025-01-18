@@ -193,7 +193,7 @@
   
   // bonus uses W, w, L, l, & . for triple/double word, 3/2 letter, & standard
   function decryptBonus(c) {
-      if (c == ".") {return ".";}
+      if (c == ".") {return ".";} 
       if (c == "W") {return "3W";}
       if (c == "w") {return "2W";}
       if (c == "L") {return " 3L";}
@@ -414,7 +414,11 @@
       }
     }
    // alert("stem = " + stem)
-
+      if (nTiles == 7) {
+      // check bonus
+        score = score + 40;
+        alert("bingo! + 40")
+      }
     if (!isAttached && !firstMove) {
       return {score: NaN, error: "Your play must connect to the existing tiles"}
     }
@@ -432,6 +436,7 @@
       return {score: NaN, error: "Single-letter words are not valid"}
     }
     else {
+
       return {score: score, error: "", word: branches[0].join(""), branches: [stem]}
     
     }
