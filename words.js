@@ -417,7 +417,7 @@
       if (nTiles == 7) {
       // check bonus
         score = score + 40;
-        alert("bingo! + 40")
+        // alert("bingo! + 40")
       }
     if (!isAttached && !firstMove) {
       return {score: NaN, error: "Your play must connect to the existing tiles"}
