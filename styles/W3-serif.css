@@ -27,14 +27,47 @@ legend{color:inherit;display:table;max-width:100%;padding:0;white-space:normal}t
 ::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}
 /* End extract */
 
+/* fonts */
+@font-face {
+  font-family: 'VT323';
+  font-style: normal;
+  font-weight: 400; 
+  src: url(./fonts/VT323/VT323-Regular.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Stardos Stencil';
+  font-style: normal;
+  font-weight: 400;
+  src: url(./fonts/Stardos_Stencil/StardosStencil-Regular.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Stardos Stencil';
+  font-style: normal;
+  font-weight: 700;
+  src: url(./fonts/Stardos_Stencil/StardosStencil-Bold.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Newsreader';
+  font-style: normal;
+  font-weight: 1 1000;
+  font-display: swap;
+  src: url(./fonts/Newsreader/Newsreader-VariableFont_opsz,wght.ttf) format('truetype-variations');
+}
+@font-face {
+  font-family: 'Newsreader';
+  font-style: italic;
+  font-weight: 1 1000;
+  font-display: swap;
+  src: url(./fonts/Newsreader/Newsreader-Italic-VariableFont_opsz,wght.ttf) format('truetype-variations');
+}
 
 /* Text display */
-html,body{font-family:Verdana,sans-serif;font-size:15px;line-height:1.5}html{overflow-x:hidden}
+html,body{font-family:"Newsreader","Times New Roman",serif;font-size:16px;line-height:1.5}html{overflow-x:hidden}
 
 /* Headers */
 h1{font-size:36px}h2{font-size:30px}h3{font-size:24px;padding-top:5px}h4{font-size:20px}h5{font-size:18px}h6{font-size:16px;text-decoration:underline}
 .w3-serif{font-family:serif}.w3-sans-serif{font-family:sans-serif}.w3-cursive{font-family:cursive}.w3-monospace{font-family:monospace}
-h1,h2,h3,h4,h5,h6{font-family:"Segoe UI",Arial,sans-serif;font-weight:400;margin:10px 0}.w3-wide{letter-spacing:4px}
+h1,h2,h3,h4,h5,h6{font-family:'Newsreader',"Times New Roman",serif;font-weight:400;margin:10px 0}.w3-wide{letter-spacing:4px}
 
 hr{border:0;border-top:1px solid #eee;margin:20px 0}
 
@@ -303,13 +336,10 @@ hr{border:0;border-top:1px solid #eee;margin:20px 0}
 
 /* Links */
 a {
-    color: #5080C0;
+    color: #147676;
     cursor: pointer;
-    text-decoration: none;
-}
-
-a:hover {
-    text-decoration: underline; 
+    text-decoration-line: underline ;
+    text-decoration-style: dotted;
 }
 
 .w3-bar a {
@@ -332,16 +362,18 @@ a:hover {
     box-shadow:5px 5px #ccccaa;
 }
 
+
 .navbtn {
-    padding:8px 16px!important;
-    background-color: rgb(135, 206, 235);
-    margin-right:10px!important; 
-    margin-bottom:20px!important;
-    border-radius:10px; 
-    box-shadow:2px 2px #aaaaaa;
-    color: black!important;
-    border: none!important;
-    text-align:center!important;
+  padding:10px 16px 8px 16px!important; /* top right bottom left */
+  background-color: rgb(135, 206, 235);
+  margin-right:10px!important; 
+  margin-bottom:20px!important;
+  border-radius:10px; 
+  box-shadow:2px 2px #aaaaaa;
+  color: black!important;
+  border: none!important;
+  text-align:center!important;
+  text-decoration: none!important;
 }
 
 .navbtn:hover {
@@ -356,19 +388,39 @@ a:hover {
     background-color: white;
 }
 
-.outlinks {
+.linkbox {
     text-align: center;
     justify-content: center;
     line-height: 30px;
     display: flex
 }
 
-.outlings div { 
+.linkbox div { 
     display: block;
 }
 
-.outlinks a {
+.linkbox a {
     padding: 4px 8px;
     color: black!important;
     text-decoration: none!important;
+}
+
+
+.announcebox {
+  padding: 0.01em 16px;
+  background-color: #E2EFF2 !important;
+  color: #000 !important;
+  box-shadow: 2px 2px #cccccc
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px; /* To avoid showing a 1px dot on some browsers */
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap; /* Prevent line breaks */
+  border-width: 0;
 }
